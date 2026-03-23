@@ -52,7 +52,7 @@ def process_list(book_list, overview) -> pd.DataFrame:
     .assign(retrieval_date = date.today()))
 
 # Full extract fn
-def extract(url = BASE_URL) <- pd.DataFrame:
+def extract(url = BASE_URL) -> pd.DataFrame:
 
   # Get overview
   overview = get_nytbs_overview(url = url)
