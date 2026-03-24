@@ -11,7 +11,7 @@ load_dotenv()
 
 # Constants
 API_KEY = os.environ.get("NYTBOOKS_API_KEY")
-BASE_URL = "https://api.nytimes.com/svc/books/v3/lists/overview.json"
+OVERVIEW_URL = "https://api.nytimes.com/svc/books/v3/lists/overview.json"
 
 # Fast-fail if key is missing
 if not API_KEY:
@@ -65,7 +65,7 @@ def process_list(book_list, overview) -> pd.DataFrame:
   )
 
 # Full extract fn
-def extract(url: str = BASE_URL) -> pd.DataFrame:
+def extract(url: str = OVERVIEW_URL) -> pd.DataFrame:
 
   # Get overview
   overview = get_nytbs_overview(url = url)
