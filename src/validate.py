@@ -94,22 +94,25 @@ def check_rank_dims(df: pd.DataFrame) -> None:
     rank_array = np.tile(np.arange(1, max_rank + 1), len(ids))
     return pd.DataFrame({"list_id": id_array, "rank": rank_array})
 
-# Create expected ranks reference
-df_l15 = create_ranks([704, 708, 1, 2, 17, 4, 301, 302, 719, 10018], 15)
-df_l10 = create_ranks([24, 13, 7, 10, 14, 532, 10015, 10016], 10)
+  # Create expected ranks reference
+  lists_w_len15 = [704, 708, 1, 2, 17, 4, 301, 302, 719, 10018] # UPDATE AS NEEDED
+  lists_w_len10 = [24, 13, 7, 10, 14, 532, 10015, 10016] # UPDATE AS NEEDED
 
-exp_ranks = pd.concat([df_l15, df_l10], ignore_index = True)
-
-# Join together and check n size
-merge_check = pd.merge(
-  df, 
-  exp_ranks, 
-  on = ['list_id', 'rank'], 
-  how = 'outer'
-)
-
-if len(merge_check) != len(exp_ranks):
-  raise ValueError("Extracted data does not match expected ranking structure.")
+  df_l15 = create_ranks(lists_w_len15, 15)
+  df_l10 = create_ranks(lists_w_len10, 10)
+  
+  exp_ranks = pd.concat([df_l15, df_l10], ignore_index = True)
+  
+  # Join together and check n size
+  merge_check = pd.merge(
+    df, 
+    exp_ranks, 
+    on = ['list_id', 'rank'], 
+    how = 'outer'
+  )
+  
+  if len(merge_check) != len(exp_ranks):
+    raise ValueError("Extracted data does not match expected ranking structure.")
 
 # Consolidated Validator Fn
 def validate(df: pd.DataFrame) -> pd.DataFrame:
