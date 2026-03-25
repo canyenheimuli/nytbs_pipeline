@@ -37,8 +37,8 @@ def convert_numeric_cols(df: pd.DataFrame) -> pd.DataFrame:
   '''
   df['primary_isbn13'] = pd.to_numeric(df['primary_isbn13'], errors = 'coerce')
   df['rank'] = pd.to_numeric(df['rank'], errors = 'coerce')
-  df['rank_last_week'] = pd.to_numeric(df['rank_last_week'], errors='coerce')
-  df['list_id'] = pd.to_numeric(df['list_id'], errors='coerce')
+  df['rank_last_week'] = pd.to_numeric(df['rank_last_week'], errors = 'coerce')
+  df['list_id'] = pd.to_numeric(df['list_id'], errors = 'coerce')
   
   return df
 
