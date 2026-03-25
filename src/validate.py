@@ -35,7 +35,7 @@ def convert_numeric_cols(df: pd.DataFrame) -> pd.DataFrame:
   Convert key cols to numeric.
   If any values are non-numeric, replace them with NaN, so they can be removed downstream in the data transformations.
   '''
-  df['primary_isbn13'] = pd.to_numeric(df['primary_isbn13'], errors = 'coerce')
+  # df['primary_isbn13'] = pd.to_numeric(df['primary_isbn13'], errors = 'coerce') It's possible for the NYT to publish typos in ISBN-13 values leading for this line to error; workaround instituted in `load()` step
   df['rank'] = pd.to_numeric(df['rank'], errors = 'coerce')
   df['rank_last_week'] = pd.to_numeric(df['rank_last_week'], errors = 'coerce')
   df['list_id'] = pd.to_numeric(df['list_id'], errors = 'coerce')
