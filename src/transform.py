@@ -25,7 +25,7 @@ def format_titles(df: pd.DataFrame) -> pd.DataFrame:
   all caps to title format with first
   letters of each word capitalized
   '''
-  df['title'] = data['title'].str.title()
+  df['title'] = df['title'].str.title()
   return df
 
 # Filter to required columns fn
