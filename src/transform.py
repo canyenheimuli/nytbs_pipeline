@@ -48,7 +48,11 @@ def cols_cleaning(df: pd.DataFrame) -> pd.DataFrame:
     'publisher',
     'rank_last_week',
     'weeks_on_list', 
+    'book_image',
     'updated_date',
+    'updated_date_year',
+    'updated_date_month',
+    'updated_date_day',
     'retrieval_date'
   ]
 
