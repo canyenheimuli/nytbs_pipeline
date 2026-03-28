@@ -15,8 +15,12 @@ def get_azuresqldb_engine() -> Engine:
   database = os.environ.get['DB_NAME']
   username = os.environ.get['DB_UID']
   password = os.environ.get['DB_PWD']
-  driver = '{/usr/local/lib/libmsodbcsql.18.dylib}'
-  # driver = '{{ODBC Driver 18 for SQL Server}}' # This is purportedly the right setup for github actions workflow
+
+  # Local Location:
+  # driver = '{/usr/local/lib/libmsodbcsql.18.dylib}'
+  driver = '{/opt/homebrew/lib/libmsodbcsql.18.dylib}' # UPDATE AS NEEDED
+  # Remote/GitHub Actions (?) Location
+  # driver = '{{ODBC Driver 18 for SQL Server}}' # UPDATE AS NEEDED
 
   # Create string and connect using engine
   conn_string = f'Driver={driver};
