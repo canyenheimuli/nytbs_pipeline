@@ -78,14 +78,15 @@ def cols_cleaning(df: pd.DataFrame) -> pd.DataFrame:
   df = df[req_cols]
 
   # Re-naming
-  df = df.rename(columns = { \
-    'primary_isbn13': 'isbn13', \
-    'rank': 'book_rank', \
-    'rank_last_week': 'rank_last_period', \
-    'weeks_on_list': 'periods_on_list', \
-    'updated_date': 'pub_date', \
-    'updated_date_year': 'pub_date_year', \
-    'updated_date_month': 'pub_date_month'
+  df = df.rename(columns = {
+    'primary_isbn13': 'isbn13',
+    'rank': 'book_rank',
+    'rank_last_week': 'rank_last_period',
+    'weeks_on_list': 'periods_on_list',
+    'updated_date': 'pub_date',
+    'updated_date_year': 'pub_date_year',
+    'updated_date_month': 'pub_date_month',
+    'description': 'book_descr'
   })
 
   # Output
