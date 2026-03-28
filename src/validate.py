@@ -29,19 +29,6 @@ def check_req_cols(df: pd.DataFrame) -> None:
   if not set(req_cols).issubset(df.columns):
     raise ValueError('Data does not include all of the required fields.')
 
-# Check numeric cols
-def convert_numeric_cols(df: pd.DataFrame) -> pd.DataFrame:
-  '''
-  Convert key cols to numeric.
-  If any values are non-numeric, replace them with NaN, so they can be removed downstream in the data transformations.
-  '''
-  # df['primary_isbn13'] = pd.to_numeric(df['primary_isbn13'], errors = 'coerce') It's possible for the NYT to publish typos in ISBN-13 values leading for this line to error; workaround instituted in `load()` step
-  df['rank'] = pd.to_numeric(df['rank'], errors = 'coerce')
-  df['rank_last_week'] = pd.to_numeric(df['rank_last_week'], errors = 'coerce')
-  df['list_id'] = pd.to_numeric(df['list_id'], errors = 'coerce')
-  
-  return df
-
 # Verify date time format for all date cols
 def verify_date_cols(df: pd.DataFrame) -> None:
   '''
@@ -108,7 +95,7 @@ def check_rank_dims(df: pd.DataFrame) -> None:
     df, 
     exp_ranks, 
     on = ['list_id', 'rank'], 
-    how = 'outer'
+    how = 'inner'
   )
   
   if len(merge_check) != len(exp_ranks):
@@ -124,7 +111,6 @@ def validate(df: pd.DataFrame) -> pd.DataFrame:
   - Rank cols follow the expected number and format of ranks
   '''
   check_req_cols(df)
-  df = convert_numeric_cols(df)
   verify_date_cols(df)
   check_missing_vals(df)
   check_rank_dims(df)
