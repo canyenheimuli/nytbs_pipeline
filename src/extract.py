@@ -56,11 +56,11 @@ def process_list(book_list, overview) -> pd.DataFrame:
   Turns the book list dict into an individual
   pd DataFrame including some overview metadata
   '''
-  return pd.DataFrame(book_list['books']).assign( \
-    list_name = book_list['list_name'], \
-    list_id = book_list['list_id'], \
-    update_freq = book_list['updated'], \
-    updated_date = overview['results']['bestsellers_date'], \
+  return pd.DataFrame(book_list['books']).assign(
+    list_name = book_list['list_name'],
+    list_id = book_list['list_id'],
+    update_freq = book_list['updated'],
+    updated_date = overview['results']['bestsellers_date'],
     retrieval_date = date.today()
   )
 
