@@ -92,8 +92,54 @@ def cols_cleaning(df: pd.DataFrame) -> pd.DataFrame:
   # Output
   return df
 
+# Normalizes all data in prep for load
+def normalize(df: pd.DataFrame) -> dict:
+  '''
+  Takes the single cleaned results table
+  and normalizes according to DB setup
+  '''
+
+  # Weekly and Monthly Tables
+  lists_cols = [
+    'list_id',	
+    'book_rank',
+    'isbn13',
+    'rank_last_period',	
+    'periods_on_list', 
+    'pub_date', 	
+    'pub_date_year',	
+    'pub_date_month',
+    'retrieval_date'
+  ]
+
+  weekly_lists = df.loc[df['update_freq'] == 'WEEKLY', lists_cols]
+  monthly_lists = df.loc[df['update_freq'] == 'MONTHLY', lists_cols]
+
+  # List Names
+  list_names = df[['list_id', 'list_name']].drop_duplicates()
+
+  # Book Info
+  books_info_cols = [
+    'isbn13',	
+    'title',
+    'author',
+    'book_descr',	
+    'publisher', 
+    'book_image'
+  ]
+
+  books = df[books_info_cols].drop_duplicates(subset = 'isbn13')
+
+  # Output
+  return {
+    'weekly_lists': weekly_lists,
+    'monthly_lists': monthly_lists,
+    'list_names': list_names,
+    'books': books
+  }
+
 # Consolidated Transformer Fn
-def transform(df: pd.DataFrame) -> pd.DataFrame:
+def transform(df: pd.DataFrame) -> dict:
   '''
   Performs the following transformations:
   - Converts certain cols to numbers
@@ -101,14 +147,16 @@ def transform(df: pd.DataFrame) -> pd.DataFrame:
   - Titleize the title column
   - Remove any duplicates of key vars
   - Cleans up column names and orders
+  - Normalizes data into tables for loading
   '''
   df = split_time_vars(df)
   df = split_time_vars(df)
   df = format_titles(df)
   df = remove_duplicates(df)
   df = cols_cleaning(df)
+  df_dict = normalize(df)
 
-  return df
+  return df_dict
 
 # Conditional Execution
 if __name__ == "__main__":
