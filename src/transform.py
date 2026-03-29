@@ -113,10 +113,10 @@ def normalize(df: pd.DataFrame) -> dict:
   ]
 
   weekly_lists = df.loc[df['update_freq'] == 'WEEKLY', lists_cols]
-  monthly_lists_staging = df.loc[df['update_freq'] == 'MONTHLY', lists_cols]
+  monthly_lists = df.loc[df['update_freq'] == 'MONTHLY', lists_cols]
 
   # List Names
-  list_names = df[['list_id', 'list_name']].drop_duplicates()
+  list_info = df[['list_id', 'list_name']].drop_duplicates()
 
   # Book Info
   books_info_cols = [
@@ -133,8 +133,8 @@ def normalize(df: pd.DataFrame) -> dict:
   # Output
   return {
     'weekly_lists': weekly_lists,
-    'monthly_lists_staging': monthly_lists_staging,
-    'list_names': list_names,
+    'monthly_lists': monthly_lists,
+    'list_info': list_info,
     'books': books
   }
 
