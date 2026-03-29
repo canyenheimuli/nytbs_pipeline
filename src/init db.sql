@@ -1,9 +1,9 @@
 -- ** DB Setup Script (creates the initial tables and metadata) **
 -- * Table Creation *
 -- List Names Table
-IF OBJECT_ID(N'dbo.list_names', N'U') IS NULL
+IF OBJECT_ID(N'dbo.list_info', N'U') IS NULL
   BEGIN
-    CREATE TABLE dbo.list_names (
+    CREATE TABLE dbo.list_info (
       list_id SMALLINT,
       list_name VARCHAR(100) NOT NULL,
       PRIMARY KEY (list_id)
