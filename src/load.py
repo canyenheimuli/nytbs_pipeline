@@ -6,6 +6,9 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.engine import Engine
 from urllib.parse import quote_plus
 
+# Load Env
+load_dotenv()
+
 # Get conn string fn.
 def get_azuresqldb_engine() -> Engine:
   '''
@@ -73,7 +76,7 @@ def insert_tables(data: dict, engine: Engine) -> None:
       engine_conn.commit()
       engine_conn.close()
 
-  print("List info data loaded to db")
+  print("---List info data loaded to db---")
 
   # Book info
   with engine.connect() as engine_conn:
@@ -109,12 +112,12 @@ def insert_tables(data: dict, engine: Engine) -> None:
       engine_conn.commit()
       engine_conn.close()
   
-  print("Books data loaded to db")
+  print("---Books data loaded to db---")
   
   # Weekly lists
   data['weekly_lists'].to_sql('weekly_lists', con = engine, if_exists = 'append', index = False)
 
-  print("Weekly list data loaded to db")
+  print("---Weekly list data loaded to db---")
 
   # Monthly lists
 
