@@ -35,8 +35,8 @@ def verify_date_cols(df: pd.DataFrame) -> None:
   Verify all date cols follow ISO 8601 format.
   Raise a ValueError if any of the 'date_time' values are invalid.
   '''
-  df.apply(lambda row: datetime.fromisoformat(row['updated_date']), axis = 1) 
-  df.apply(lambda row: datetime.fromisoformat(row['retrieval_date']), axis = 1) 
+  df.apply(lambda row: datetime.fromisoformat(str(row['updated_date'])), axis = 1) 
+  df.apply(lambda row: datetime.fromisoformat(str(row['retrieval_date'])), axis = 1) 
 
 # Checks for missing values among key columns
 def check_missing_vals(df: pd.DataFrame) -> None:
