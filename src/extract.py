@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Constants
-API_KEY = os.environ.get("NYTBOOKS_API_KEY")
+API_KEY = os.environ.get("NYT_KEY")
 OVERVIEW_URL = "https://api.nytimes.com/svc/books/v3/lists/overview.json"
 
 # Fast-fail if key is missing
