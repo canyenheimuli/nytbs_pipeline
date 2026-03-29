@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 import pyodbc
 from sqlalchemy import create_engine, text
 
-# Get conn string fn.
+# Get connection engine fn.
 def get_azuresqldb_engine() -> Engine:
   '''
   Returns the formatted conn string for
@@ -32,7 +32,9 @@ def get_azuresqldb_engine() -> Engine:
                 TrustServerCertificate=no;\
                 Connection Timeout=120;'
 
-  return create_engine(conn_string)
+  conn_url = f"mssql+pyodbc:///?odbc_connect={quote_plus(conn_string)}"
+  
+  return create_engine(conn_url)
 
 # Conditional table loading function
 def insert_tables(data: dict, engine: Engine) -> None:
