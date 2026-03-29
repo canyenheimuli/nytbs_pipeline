@@ -42,7 +42,7 @@ IF OBJECT_ID(N'dbo.weekly_lists', N'U') IS NULL
       PRIMARY KEY (list_id, book_rank, pub_date),
       CONSTRAINT FK_weeklies_listnames
         FOREIGN KEY (list_id)
-        REFERENCES dbo.list_names(list_id),
+        REFERENCES dbo.list_info(list_id),
       CONSTRAINT FK_weeklies_books
         FOREIGN KEY (isbn13)
         REFERENCES dbo.books(isbn13)
@@ -66,7 +66,7 @@ IF OBJECT_ID(N'dbo.monthly_lists', N'U') IS NULL
       PRIMARY KEY (list_id, book_rank, pub_date),
       CONSTRAINT FK_monthlies_listnames
         FOREIGN KEY (list_id)
-        REFERENCES dbo.list_names(list_id),
+        REFERENCES dbo.list_info(list_id),
       CONSTRAINT FK_monthlies_books
         FOREIGN KEY (isbn13)
         REFERENCES dbo.books(isbn13)
