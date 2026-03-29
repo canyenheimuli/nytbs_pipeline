@@ -11,10 +11,10 @@ def get_azuresqldb_engine() -> Engine:
   connecting to the specified Azure SQL DB
   '''
   # Conn string params
-  server = os.environ.get['SERVER_NAME']
-  database = os.environ.get['DB_NAME']
-  username = os.environ.get['DB_UID']
-  password = os.environ.get['DB_PWD']
+  server = os.environ.get('SERVER_NAME')
+  database = os.environ.get('DB_NAME')
+  username = os.environ.get('DB_UID')
+  password = os.environ.get('DB_PWD')
 
   # Local Location:
   # driver = '{/usr/local/lib/libmsodbcsql.18.dylib}'
@@ -23,13 +23,13 @@ def get_azuresqldb_engine() -> Engine:
   # driver = '{{ODBC Driver 18 for SQL Server}}' # UPDATE AS NEEDED
 
   # Create string and connect using engine
-  conn_string = f'Driver={driver};
-                Server=tcp:{server},1433;
-                Database={database};
-                Uid={username};
-                Pwd={password};
-                Encrypt=yes;
-                TrustServerCertificate=no;
+  conn_string = f'Driver={driver};\
+                Server=tcp:{server},1433;\
+                Database={database};\
+                Uid={username};\
+                Pwd={password};\
+                Encrypt=yes;\
+                TrustServerCertificate=no;\
                 Connection Timeout=120;'
 
   return create_engine(conn_string)
