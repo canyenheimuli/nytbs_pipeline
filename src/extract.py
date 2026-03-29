@@ -14,7 +14,7 @@ NYT_KEY = os.environ.get("NYT_KEY")
 NYT_BSLISTS_OVERVIEW_URL = "https://api.nytimes.com/svc/books/v3/lists/overview.json"
 
 # Fast-fail if key is missing
-if not API_KEY:
+if not NYT_KEY:
     raise EnvironmentError("NYT API Key is not set. Check your .env file.")
 
 # Get results overview fn
