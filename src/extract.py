@@ -10,12 +10,12 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Constants
-API_KEY = os.environ.get("NYT_KEY")
-OVERVIEW_URL = "https://api.nytimes.com/svc/books/v3/lists/overview.json"
+NYT_KEY = os.environ.get("NYT_KEY")
+NYT_BSLISTS_OVERVIEW_URL = "https://api.nytimes.com/svc/books/v3/lists/overview.json"
 
 # Fast-fail if key is missing
 if not API_KEY:
-    raise EnvironmentError("NYTBOOKS_API_KEY is not set. Check your .env file.")
+    raise EnvironmentError("NYT API Key is not set. Check your .env file.")
 
 # Get results overview fn
 def get_nytbs_overview(url: str, params: dict | None = None) -> dict:
@@ -25,7 +25,7 @@ def get_nytbs_overview(url: str, params: dict | None = None) -> dict:
   '''
   # Params fallback
   if params is None:
-    params = {"api-key": API_KEY}
+    params = {"api-key": NYT_KEY}
   
   # Try to get overview with exceptions
   try:
@@ -65,7 +65,7 @@ def process_list(book_list, overview) -> pd.DataFrame:
   )
 
 # Full extract fn
-def extract(url: str = OVERVIEW_URL) -> pd.DataFrame:
+def extract(url: str = NYT_BSLISTS_OVERVIEW_URL) -> pd.DataFrame:
 
   # Get overview
   overview = get_nytbs_overview(url = url)
