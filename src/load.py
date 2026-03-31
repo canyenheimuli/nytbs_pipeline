@@ -122,7 +122,6 @@ def insert_tables(data: dict, engine: Engine) -> None:
     # Monthly lists
     with engine.connect() as engine_conn:
         
-        ### TESTING
         # Set queries
         stage_table_query = """
         CREATE TABLE monthly_stage (
@@ -163,7 +162,6 @@ def insert_tables(data: dict, engine: Engine) -> None:
         engine_conn.execute(text(del_stage_query))
         engine_conn.commit()
         engine_conn.close()
-        ### TESTING
         
     print("---Monthly list data loaded to db---")
         
