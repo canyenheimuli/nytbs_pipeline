@@ -12,8 +12,8 @@ load_dotenv()
 # Get conn string fn.
 def get_azuresqldb_engine() -> Engine:
     '''
-    Returns the formatted conn string for
-    connecting to the specified Azure SQL DB
+    Returns the SQLAlchemy connection engine
+    for connecting to the Azure SQL DB
     '''
     # Conn string params
     server = os.environ.get('SERVER_NAME')
