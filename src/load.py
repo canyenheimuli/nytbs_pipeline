@@ -155,6 +155,7 @@ def insert_tables(data: dict, engine: Engine) -> None:
         """
         
         del_stage_query = "DROP TABLE monthly_stage;"
+        
         # Create stage table, stage data, conditional merge, delete stage, close conn
         engine_conn.execute(text(stage_table_query))
         data['monthly_lists'].to_sql('monthly_stage', con = engine_conn, if_exists = 'append', index = False)
