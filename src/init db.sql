@@ -35,11 +35,11 @@ IF OBJECT_ID(N'dbo.weekly_lists', N'U') IS NULL
       isbn13 VARCHAR(20) NOT NULL,	
       rank_last_period SMALLINT NOT NULL,
       periods_on_list SMALLINT NOT NULL, 
-      pub_date DATE NOT NULL,
-      pub_date_year SMALLINT NULL,
-      pub_date_month SMALLINT NULL,
+      list_date DATE NOT NULL,
+      list_date_year SMALLINT NULL,
+      list_date_month SMALLINT NULL,
       retrieval_date DATE NOT NULL,
-      PRIMARY KEY (list_id, book_rank, pub_date),
+      PRIMARY KEY (list_id, book_rank, list_date),
       CONSTRAINT FK_weeklies_listnames
         FOREIGN KEY (list_id)
         REFERENCES dbo.list_info(list_id),
@@ -59,11 +59,11 @@ IF OBJECT_ID(N'dbo.monthly_lists', N'U') IS NULL
       isbn13 VARCHAR(20) NOT NULL,	
       rank_last_period SMALLINT NOT NULL,
       periods_on_list SMALLINT NOT NULL, 
-      pub_date DATE NOT NULL,
-      pub_date_year SMALLINT NULL,
-      pub_date_month SMALLINT NULL,
+      list_date DATE NOT NULL,
+      list_date_year SMALLINT NULL,
+      list_date_month SMALLINT NULL,
       retrieval_date DATE NOT NULL,
-      PRIMARY KEY (list_id, book_rank, pub_date),
+      PRIMARY KEY (list_id, book_rank, list_date_month, list_date_year),
       CONSTRAINT FK_monthlies_listnames
         FOREIGN KEY (list_id)
         REFERENCES dbo.list_info(list_id),
