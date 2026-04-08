@@ -12,8 +12,8 @@ load_dotenv()
 # Get conn string fn.
 def get_azuresqldb_engine() -> Engine:
     '''
-    Returns the SQLAlchemy connection engine
-    for connecting to the Azure SQL DB
+    Returns the formatted conn string for
+    connecting to the specified Azure SQL DB
     '''
     # Conn string params
     server = os.environ.get('SERVER_NAME')
@@ -115,7 +115,49 @@ def insert_tables(data: dict, engine: Engine) -> None:
     print("---Books data loaded to db---")
     
     # Weekly lists
-    data['weekly_lists'].to_sql('weekly_lists', con = engine, if_exists = 'replace', index = False)
+    # data['weekly_lists'].to_sql('weekly_lists', con = engine, if_exists = 'replace', index = False)
+    
+    ### TESTING
+    with engine.connect() as engine_conn:
+        
+        # Set queries
+        stage_table_query = """
+        CREATE TABLE weekly_stage (
+            list_id SMALLINT NOT NULL,
+            book_rank SMALLINT NOT NULL,
+            isbn13 VARCHAR(20) NOT NULL,	
+            rank_last_period SMALLINT NOT NULL,
+            periods_on_list SMALLINT NOT NULL, 
+            list_date DATE NOT NULL,
+            list_date_month SMALLINT NULL,
+            list_date_year SMALLINT NULL,
+            retrieval_date DATE NOT NULL,
+        );
+        """
+        
+        cond_merge_query = """
+        MERGE INTO weekly_lists AS w
+        USING weekly_stage AS ws
+            ON (
+                w.list_id = ws.list_id AND
+                w.book_rank = ws.book_rank AND
+                w.list_date = ws.list_date
+                )
+        WHEN NOT MATCHED BY TARGET THEN
+            INSERT (list_id, book_rank, isbn13, rank_last_period, periods_on_list, list_date, list_date_month, list_date_year, retrieval_date)
+            VALUES (ws.list_id, ws.book_rank, ws.isbn13, ws.rank_last_period, ws.periods_on_list, ws.list_date, ws.list_date_month, ws.list_date_year, ws.retrieval_date);
+        """
+        
+        del_stage_query = "DROP TABLE weekly_stage;"
+        
+        # Create stage table, stage data, conditional merge, delete stage, close conn
+        engine_conn.execute(text(stage_table_query))
+        data['weekly_lists'].to_sql('weekly_stage', con = engine_conn, if_exists = 'append', index = False)
+        engine_conn.execute(text(cond_merge_query))
+        engine_conn.execute(text(del_stage_query))
+        engine_conn.commit()
+        engine_conn.close()
+    ### TESTING
     
     print("---Weekly list data loaded to db---")
     
@@ -130,9 +172,9 @@ def insert_tables(data: dict, engine: Engine) -> None:
             isbn13 VARCHAR(20) NOT NULL,	
             rank_last_period SMALLINT NOT NULL,
             periods_on_list SMALLINT NOT NULL, 
-            pub_date DATE NOT NULL,
-            pub_date_year SMALLINT NULL,
-            pub_date_month SMALLINT NULL,
+            list_date DATE NOT NULL,
+            list_date_month SMALLINT NULL,
+            list_date_year SMALLINT NULL,
             retrieval_date DATE NOT NULL,
         );
         """
@@ -143,15 +185,14 @@ def insert_tables(data: dict, engine: Engine) -> None:
             ON (
                 m.list_id = ms.list_id AND
                 m.book_rank = ms.book_rank AND
-                m.pub_date = ms.pub_date AND
                 m.rank_last_period = ms.rank_last_period AND
                 m.periods_on_list = ms.periods_on_list AND
-                m.pub_date_year = ms.pub_date_year AND
-                m.pub_date_month = ms.pub_date_month
+                m.list_date_month = ms.list_date_month AND
+                m.list_date_year = ms.list_date_year 
                 )
         WHEN NOT MATCHED BY TARGET THEN
-            INSERT (list_id, book_rank, isbn13, rank_last_period, periods_on_list, pub_date, pub_date_year, pub_date_month, retrieval_date)
-            VALUES (ms.list_id, ms.book_rank, ms.isbn13, ms.rank_last_period, ms.periods_on_list, ms.pub_date, ms.pub_date_year, ms.pub_date_month, ms.retrieval_date);
+            INSERT (list_id, book_rank, isbn13, rank_last_period, periods_on_list, list_date, list_date_month, list_date_year, retrieval_date)
+            VALUES (ms.list_id, ms.book_rank, ms.isbn13, ms.rank_last_period, ms.periods_on_list, ms.list_date, ms.list_date_month, ms.list_date_year, ms.retrieval_date);
         """
         
         del_stage_query = "DROP TABLE monthly_stage;"
@@ -186,4 +227,4 @@ def load(data: dict) -> None:
 
 # Conditional Execution
 if __name__ == "__main__":
-  load()
+    load()
