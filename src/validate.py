@@ -119,3 +119,7 @@ def validate(df: pd.DataFrame) -> pd.DataFrame:
     # check_rank_dims(df)
     
     return df
+
+# Conditional Execution
+if __name__ == "__main__":
+    validate()
