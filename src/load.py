@@ -48,7 +48,7 @@ def insert_tables(data: dict, engine: Engine) -> None:
     tables based on table 
     - Lists: Staged inseration only for new records
     - Books: Staged insertion only for new records
-    - Weekly: Normal insertion
+    - Weekly: Staged (effectively normal) insertion only for new records
     - Monthly: Staged insertion only where staged data is different from most recent data
     '''
     # List info  
