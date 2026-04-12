@@ -1,0 +1,54 @@
+# .github/workflows/etl_pipeline.yml
+
+name: ETL Pipeline
+
+on:
+  push: # TO-DO: replace with "schedule" once manual testing finished
+    branches: [main] # TO-DO: replace with "- cron: "0 0 * * 5" " once manual testing finished
+  workflow_dispatch: 
+
+jobs:
+  run-etl:
+    runs-on: ubuntu-latest
+
+    env:
+      # Airflow
+      AIRFLOW_HOME: ${{ github.workspace }}/airflow_home
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false" # Required to suppress the default example DAGs warning
+      AIRFLOW__CORE__DAGS_FOLDER: ${{ github.workspace }}/dags
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: sqlite:///${{ github.workspace }}/airflow_home/airflow.db # Uses a local SQLite DB as Airflow's metadata store
+      AIRFLOW__CORE__EXECUTOR: SequentialExecutor
+
+      # Azure SQL DB Creds
+      AZURE_SQL_SERVER: ${{ secrets.AZURE_SQL_SERVER }}
+      AZURE_SQL_DATABASE: ${{ secrets.AZURE_SQL_DATABASE }}
+      AZURE_SQL_USERNAME: ${{ secrets.AZURE_SQL_USERNAME }}
+      AZURE_SQL_PASSWORD: ${{ secrets.AZURE_SQL_PASSWORD }}
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          # dependency conflicts (officially recommended install method)
+          AIRFLOW_VERSION=2.9.3
+          PYTHON_VERSION=3.11
+          pip install "apache-airflow==${AIRFLOW_VERSION}" \
+            --constraint "https://raw.githubusercontent.com/apache/airflow/constraints-${AIRFLOW_VERSION}/constraints-${PYTHON_VERSION}.txt"
+          pip install -r requirements.txt
+
+      - name: Initialise Airflow metadata DB
+        run: airflow db migrate
+
+      - name: Run the DAG
+        run: |
+          # Add your etl/ package to the Python path so the DAG can import it
+          export PYTHONPATH="${PYTHONPATH}:${{ github.workspace }}/src"
+          airflow dags test etl_pipeline $(date +%Y-%m-%dT%H:%M:%S)
