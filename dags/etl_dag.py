@@ -1,4 +1,4 @@
-##### ETL Pipeline DAG
+##### Pipeline DAG
 
 # Packages
 from __future__ import annotations
@@ -45,6 +45,9 @@ with DAG(
     extract_task = PythonOperator(
         task_id = "extract_task",
         python_callable = run_extract,
+	retries = 3,
+    	retry_delay=timedelta(seconds = 10),
+    	retry_exponential_backoff = True
     )
 
     validate_task = PythonOperator(
@@ -60,6 +63,9 @@ with DAG(
     load_task = PythonOperator(
         task_id = "load_task",
         python_callable = run_load,
+	retries = 3,
+    	retry_delay=timedelta(seconds = 10),
+    	retry_exponential_backoff = True
     )
 
     # Pipeline
