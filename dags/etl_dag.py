@@ -35,7 +35,7 @@ def run_load(**context):
 with DAG(
     dag_id = "etl_pipeline",
     start_date = datetime(2026, 1, 1),
-    schedule = None, # TO-DO: Update to Friday CRON (0 0 * * 5) when testing is done
+    schedule = None, # TO-DO: EITHER Update to Friday CRON (0 0 * * 5) when testing is done OR keep as "None" if letting GH Actions do the scheduling
     catchup = False,
     tags = ["etl"],
 ) as dag:
