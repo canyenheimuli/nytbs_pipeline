@@ -49,6 +49,5 @@ jobs:
 
       - name: Run the DAG
         run: |
-          # Add your etl/ package to the Python path so the DAG can import it
           export PYTHONPATH="${PYTHONPATH}:${{ github.workspace }}/src"
           airflow dags test etl_pipeline $(date +%Y-%m-%dT%H:%M:%S)
