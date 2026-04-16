@@ -10,11 +10,11 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Constants
-NYT_KEY = os.environ.get("NYT_KEY")
+NYT_API_KEY = os.environ.get("NYT_API_KEY")
 NYT_BSLISTS_OVERVIEW_URL = "https://api.nytimes.com/svc/books/v3/lists/overview.json"
 
 # Fast-fail if key is missing
-if not NYT_KEY:
+if not NYT_API_KEY:
     raise EnvironmentError("NYT API Key is not set. Check your .env file.")
 
 # Get results overview fn
@@ -26,7 +26,7 @@ def get_nytbs_overview(url: str, params: dict | None = None, date: str | None = 
     # Params fallback
     if params is None:
         # Set API Key
-        params = {"api-key": NYT_KEY}
+        params = {"api-key": NYT_API_KEY}
         
         # Conditionally set date
         if date is not None:
