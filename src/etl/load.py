@@ -12,20 +12,20 @@ load_dotenv()
 # Get conn string fn.
 def get_azuresqldb_engine() -> Engine:
     '''
-    Returns the formatted conn string for
+    Returns the SQL Alchemy connection engine for
     connecting to the specified Azure SQL DB
     '''
     # Conn string params
-    server = os.environ.get('SERVER_NAME')
-    database = os.environ.get('DB_NAME')
-    username = os.environ.get('DB_UID')
-    password = os.environ.get('DB_PWD')
-    
-    # Local Location:
-    # driver = '{/usr/local/lib/libmsodbcsql.18.dylib}'
-    driver = '{/opt/homebrew/lib/libmsodbcsql.18.dylib}' # UPDATE AS NEEDED
-    # Remote/GitHub Actions (?) Location
-    # driver = '{{ODBC Driver 18 for SQL Server}}' # UPDATE AS NEEDED
+    server = os.environ.get('AZURE_SQL_SERVER')
+    database = os.environ.get('AZURE_SQL_DATABASE')
+    username = os.environ.get('AZURE_SQL_USERNAME')
+    password = os.environ.get('AZURE_SQL_PASSWORD')
+
+    # Conditional Driver Config
+    if os.environ.get('GITHUB_ACTIONS') == 'true':
+        driver = '{{ODBC Driver 18 for SQL Server}}' # GitHub Actions Driver Name
+    else:
+        driver = '{/usr/local/lib/libmsodbcsql.18.dylib}' # Local env driver location
     
     # Create string and connect using engine
     conn_string = f"Driver={driver}; \
