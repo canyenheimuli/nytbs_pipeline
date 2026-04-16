@@ -19,6 +19,9 @@ jobs:
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: sqlite:///${{ github.workspace }}/airflow_home/airflow.db # Uses a local SQLite DB as Airflow's metadata store
       AIRFLOW__CORE__EXECUTOR: SequentialExecutor
 
+      # NYT API Key
+      NYT_API_KEY: ${{ secrets.NYT_API_KEY }}
+
       # Azure SQL DB Creds
       AZURE_SQL_SERVER: ${{ secrets.AZURE_SQL_SERVER }}
       AZURE_SQL_DATABASE: ${{ secrets.AZURE_SQL_DATABASE }}
