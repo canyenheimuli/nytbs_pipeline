@@ -7,10 +7,10 @@ from airflow import DAG
 from airflow.operators.python import PythonOperator
 
 # ETL functions
-from src.extract import extract
-from src.validate import validate
-from src.transform import transform
-from src.load import load
+from etl.extract import extract
+from etl.validate import validate
+from etl.transform import transform
+from etl.load import load
 
 # Task wrapper functions
 def run_extract(**context):
