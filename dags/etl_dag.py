@@ -2,6 +2,7 @@
 from __future__ import annotations
 from datetime import datetime, timedelta
 import json
+import pandas as pd
 
 from airflow import DAG
 from airflow.operators.python import PythonOperator
