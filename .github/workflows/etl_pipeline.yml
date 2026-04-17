@@ -40,7 +40,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install --upgrade pip
-          AIRFLOW_VERSION=2.9.3
+          AIRFLOW_VERSION=3.2.0
           PYTHON_VERSION=3.11
           pip install "apache-airflow==${AIRFLOW_VERSION}" \
             --constraint "https://raw.githubusercontent.com/apache/airflow/constraints-${AIRFLOW_VERSION}/constraints-${PYTHON_VERSION}.txt"
