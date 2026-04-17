@@ -20,7 +20,7 @@ def run_extract(**context):
 def run_validate(**context):
     raw_data = context["ti"].xcom_pull(key = "raw_data", task_ids = "extract_task")
     validated_data = validate(pd.read_json(raw_data))
-    context["ti"].xcom_push(key="validated_data", value = validated_data.to_json()
+    context["ti"].xcom_push(key="validated_data", value = validated_data.to_json())
 
 def run_transform(**context):
     validated_data = context["ti"].xcom_pull(key = "validated_data", task_ids = "validate_task")
