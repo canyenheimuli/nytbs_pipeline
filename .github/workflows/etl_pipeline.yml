@@ -46,6 +46,11 @@ jobs:
           pip install "apache-airflow==${AIRFLOW_VERSION}" \
             --constraint "https://raw.githubusercontent.com/apache/airflow/constraints-${AIRFLOW_VERSION}/constraints-${PYTHON_VERSION}.txt"
           pip install -r requirements.txt
+          # Add pip's bin directory to PATH for subsequent steps
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Verify Airflow install
+        run: which airflow || echo "airflow not found on PATH"
 
       - name: Initialise Airflow metadata DB
         run: airflow db migrate
