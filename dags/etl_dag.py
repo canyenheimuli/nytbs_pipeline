@@ -17,12 +17,12 @@ from etl.load import load
 # Task wrapper functions
 def run_extract(**context):
     raw_data = extract()
-    context["ti"].xcom_push(key = "raw_data", value = raw_data.to_json())
+    context["ti"].xcom_push(key = "raw_data", value = raw_data.to_json(date_format = "iso"))
 
 def run_validate(**context):
     raw_data = context["ti"].xcom_pull(key = "raw_data", task_ids = "extract_task")
     validated_data = validate(pd.read_json(io.StringIO(raw_data)))
-    context["ti"].xcom_push(key="validated_data", value = validated_data.to_json())
+    context["ti"].xcom_push(key="validated_data", value = validated_data.to_json(date_format = "iso"))
 
 def run_transform(**context):
     validated_data = context["ti"].xcom_pull(key = "validated_data", task_ids = "validate_task")
@@ -30,7 +30,7 @@ def run_transform(**context):
 
 	# Serialize each DataFrame in the dictionary individually
     serialized = {key: df.to_json() for key, df in transformed_data.items()}
-    context["ti"].xcom_push(key = "transformed_data", value = json.dumps(serialized))
+    context["ti"].xcom_push(key = "transformed_data", value = json.dumps(serialized, default = str))
 
 def run_load(**context):
     transformed_data = context["ti"].xcom_pull(key = "transformed_data", task_ids = "transform_task")
