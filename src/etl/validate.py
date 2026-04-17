@@ -65,44 +65,22 @@ def check_missing_vals(df: pd.DataFrame) -> None:
         raise ValueError(f"Missing values are present in the following attributes: {', '.join(null_cols)}")
 
 # Check that the dataframe has the expected rank format
-def check_rank_dims(df: pd.DataFrame) -> None:
-    '''
-    Creates a "reference rank table" and checks
-    the input df against this to validate table organization
-    '''
+def check_ranks(df: pd.DataFrame, sort_col: "str" = "rank") -> None:
+    """
+    Ensures that the input data follows the expected ranking structure
+    (expected structure is dense ranks within each list_id grouping);
+    Raises an error otherwise
+    """
+    # Get dense rankings based on sort col ("rank")
+    df["rank_check"] = df.groupby("list_id")[sort_col] \
+        .rank(method = "dense") \
+        .astype(int)
+
+    # Ensure they match
+    rank_check = (df["rank_check"] == df[sort_col]).all()
     
-    # Helper function
-    def create_ranks(ids, max_rank):
-        '''
-        Creates a rank reference dataframe with a sequence "max_rank" 
-        for a list of input ids
-        '''
-        id_array = np.repeat(ids, max_rank)
-        rank_array = np.tile(np.arange(1, max_rank + 1), len(ids))
-        return pd.DataFrame({"list_id": id_array, "rank": rank_array})
-    
-    # Create expected ranks reference
-    lists_w_len15 = [704, 708, 1, 2, 17, 4, 301, 302, 719, 10018] # UPDATE AS NEEDED
-    lists_w_len10 = [24, 13, 7, 10, 14, 532, 10015, 10016] # UPDATE AS NEEDED
-    
-    # lists_w_len15 = [704, 708, 1, 2, 17, 303, 301, 302, 719, 10004] # UPDATE AS NEEDED
-    # lists_w_len10 = [24, 13, 7, 10, 14, 304, 532, 10015, 10016] # UPDATE AS NEEDED
-    
-    df_l15 = create_ranks(lists_w_len15, 15)
-    df_l10 = create_ranks(lists_w_len10, 10)
-    
-    exp_ranks = pd.concat([df_l15, df_l10], ignore_index = True)
-    
-    # Join together and check n size
-    merge_check = pd.merge(
-        df, 
-        exp_ranks, 
-        on = ['list_id', 'rank'], 
-        how = 'inner'
-    )
-    
-    if len(merge_check) != len(exp_ranks):
-        raise ValueError("Extracted data does not match expected ranking structure.")
+    if not rank_check:
+        raise ValueError("Data column 'rank' does not follow expected structure.")
 
 # Consolidated Validator Fn
 def validate(df: pd.DataFrame) -> pd.DataFrame:
@@ -111,12 +89,12 @@ def validate(df: pd.DataFrame) -> pd.DataFrame:
     - Has the right cols
     - Dates follows ISO 8601 format
     - No missing values in columns that require data
-    - Rank cols follow the expected number and format of ranks
+    - Rank cols follow the expected format of ranks
     '''
     check_req_cols(df)
     verify_date_cols(df)
     check_missing_vals(df)
-    # check_rank_dims(df)
+    check_ranks(df)
     
     return df
 
