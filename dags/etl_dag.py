@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import datetime, timedelta
 import json
 import pandas as pd
+import io
 
 from airflow import DAG
 from airflow.providers.standard.operators.python import PythonOperator
@@ -20,12 +21,12 @@ def run_extract(**context):
 
 def run_validate(**context):
     raw_data = context["ti"].xcom_pull(key = "raw_data", task_ids = "extract_task")
-    validated_data = validate(pd.read_json(raw_data))
+    validated_data = validate(pd.read_json(io.StringIO(raw_data)))
     context["ti"].xcom_push(key="validated_data", value = validated_data.to_json())
 
 def run_transform(**context):
     validated_data = context["ti"].xcom_pull(key = "validated_data", task_ids = "validate_task")
-    transformed_data = transform(pd.read_json(validated_data))
+    transformed_data = transform(pd.read_json(io.StringIO(validated_data)))
 
 	# Serialize each DataFrame in the dictionary individually
     serialized = {key: df.to_json() for key, df in transformed_data.items()}
@@ -35,7 +36,7 @@ def run_load(**context):
     transformed_data = context["ti"].xcom_pull(key = "transformed_data", task_ids = "transform_task")
     
     # Deserialize back to a dictionary of DataFrames
-    deserialized = {key: pd.read_json(df_json) for key, df_json in json.loads(transformed_data).items()}
+    deserialized = {key: pd.read_json(io.StringIO(df_json)) for key, df_json in json.loads(transformed_data).items()}
     load(deserialized)
 
 # DAG definition
