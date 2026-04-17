@@ -44,7 +44,7 @@ with DAG(
         task_id = "extract_task",
         python_callable = run_extract,
 		retries = 3,
-    	retry_delay=timedelta(seconds = 10),
+    	retry_delay = timedelta(seconds = 10),
     	retry_exponential_backoff = True
     )
 
@@ -62,7 +62,7 @@ with DAG(
         task_id = "load_task",
         python_callable = run_load,
 		retries = 3,
-    	retry_delay=timedelta(seconds = 10),
+    	retry_delay = timedelta(seconds = 10),
     	retry_exponential_backoff = True
     )
 
