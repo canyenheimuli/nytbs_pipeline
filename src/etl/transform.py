@@ -5,13 +5,15 @@ import pandas as pd
 def convert_numeric_cols(df: pd.DataFrame) -> pd.DataFrame:
     '''
     Convert key cols to numeric.
-    If any values are non-numeric, replace them with NaN, so they can be removed downstream in the data transformations.
+    If any values are non-numeric, replace them with NaN, 
+    so they can be removed downstream in the data transformations.
     '''
     df['primary_isbn13'] = pd.to_numeric(df['primary_isbn13'], errors = 'coerce') # It's possible for the NYT to publish faulty ISBN-13 values leading to bugs; current procedure is to just drop them
     df['rank'] = pd.to_numeric(df['rank'], errors = 'coerce')
     df['rank_last_week'] = pd.to_numeric(df['rank_last_week'], errors = 'coerce')
     df['list_id'] = pd.to_numeric(df['list_id'], errors = 'coerce')
-    
+
+    # Transform
     return df
 
 # Split datetime vars fn
@@ -30,6 +32,19 @@ def split_time_vars(df: pd.DataFrame) -> pd.DataFrame:
     # Output
     return df
 
+# Coerce time vars fn
+def coerce_time_vars(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Coerces the two main date variables
+    into datetime objects with the specific
+    %Y-%m-%d format to prevent JSON data loss
+    """
+    df['list_date'] = pd.to_datetime(df['pub_date'], format = '%Y-%m-%d')
+    df['retrieval_date'] = pd.to_datetime(df['retrieval_date'], format = '%Y-%m-%d')
+
+    # Output
+    return df
+
 # Titleize title column fn
 def format_titles(df: pd.DataFrame) -> pd.DataFrame:
     '''
@@ -38,6 +53,8 @@ def format_titles(df: pd.DataFrame) -> pd.DataFrame:
     letters of each word capitalized
     '''
     df['title'] = df['title'].str.title()
+
+    # Output
     return df
 
 # Remove any duplicates of key vars fn
@@ -148,13 +165,15 @@ def transform(df: pd.DataFrame) -> dict:
     '''
     df = split_time_vars(df)
     df = split_time_vars(df)
+    df = coerce_time_vars(df)
     df = format_titles(df)
     df = remove_duplicates(df)
     df = cols_cleaning(df)
     df_dict = normalize(df)
-    
-    return df_dict
 
+    # Output
+    return df_dict
+    
 # Conditional Execution
 if __name__ == "__main__":
     transform()
