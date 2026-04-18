@@ -17,16 +17,16 @@ from etl.load import load
 # Task wrapper functions
 def run_extract(**context):
     raw_data = extract()
-    context["ti"].xcom_push(key = "raw_data", value = raw_data.to_json(date_format = "iso"))
+    context["ti"].xcom_push(key = "raw_data", value = raw_data.to_json(orient = "table", date_format = "iso"))
 
 def run_validate(**context):
     raw_data = context["ti"].xcom_pull(key = "raw_data", task_ids = "extract_task")
-    validated_data = validate(pd.read_json(io.StringIO(raw_data)))
-    context["ti"].xcom_push(key="validated_data", value = validated_data.to_json(date_format = "iso"))
+    validated_data = validate(pd.read_json(io.StringIO(raw_data), orient = "table"))
+    context["ti"].xcom_push(key="validated_data", value = validated_data.to_json(orient = "table", date_format = "iso"))
 
 def run_transform(**context):
     validated_data = context["ti"].xcom_pull(key = "validated_data", task_ids = "validate_task")
-    transformed_data = transform(pd.read_json(io.StringIO(validated_data)))
+    transformed_data = transform(pd.read_json(io.StringIO(validated_data), orient = "table"))
 
 	# Serialize each DataFrame in the dictionary individually
     serialized = {key: df.to_json() for key, df in transformed_data.items()}
@@ -36,7 +36,7 @@ def run_load(**context):
     transformed_data = context["ti"].xcom_pull(key = "transformed_data", task_ids = "transform_task")
     
     # Deserialize back to a dictionary of DataFrames
-    deserialized = {key: pd.read_json(io.StringIO(df_json)) for key, df_json in json.loads(transformed_data).items()}
+    deserialized = {key: pd.read_json(io.StringIO(df_json), orient = "table") for key, df_json in json.loads(transformed_data).items()}
     load(deserialized)
 
 # DAG definition
