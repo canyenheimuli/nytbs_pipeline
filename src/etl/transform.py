@@ -39,7 +39,7 @@ def coerce_time_vars(df: pd.DataFrame) -> pd.DataFrame:
     into datetime objects with the specific
     %Y-%m-%d format to prevent JSON data loss
     """
-    df['list_date'] = pd.to_datetime(df['pub_date'], format = '%Y-%m-%d')
+    df['list_date'] = pd.to_datetime(df['list_date'], format = '%Y-%m-%d')
     df['retrieval_date'] = pd.to_datetime(df['retrieval_date'], format = '%Y-%m-%d')
 
     # Output
