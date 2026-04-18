@@ -25,7 +25,7 @@ def get_azuresqldb_engine() -> Engine:
     if os.environ.get('GITHUB_ACTIONS') == 'true':
         driver = '{ODBC Driver 18 for SQL Server}' # GitHub Actions Driver Name
     else:
-        driver = '{/usr/local/lib/libmsodbcsql.18.dylib}' # Local env driver location
+        driver = '{/opt/homebrew/lib/libmsodbcsql.18.dylib}'  # Local env driver location
     
     # Create string and connect using engine
     conn_string = f"Driver={driver}; \
