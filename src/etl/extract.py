@@ -56,7 +56,7 @@ def get_nytbs_overview(url: str, params: dict | None = None, date: str | None = 
         raise RuntimeError(f"Failed to parse JSON response: {e}") from e
 
 # Clean List Dict fn
-def process_list(book_list, overview) -> pd.DataFrame:
+def process_list(book_list: dict, overview: dict) -> pd.DataFrame:
     '''
     Turns the book list dict into an individual
     pd DataFrame including some overview metadata
@@ -65,8 +65,10 @@ def process_list(book_list, overview) -> pd.DataFrame:
         list_name = book_list['list_name'],
         list_id = book_list['list_id'],
         update_freq = book_list['updated'],
-        pub_date = overview['results']['published_date'],
-        retrieval_date = date.today()
+        # pub_date = overview['results']['published_date'],
+        # retrieval_date = date.today()
+        pub_date = pd.to_datetime(overview['results']['published_date'], format = '%Y-%m-%d'),
+        retrieval_date = pd.to_datetime(date.today(), format = '%Y-%m-%d')
     )
 
 # Full extract fn
