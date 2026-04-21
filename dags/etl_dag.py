@@ -4,40 +4,49 @@ from datetime import datetime, timedelta
 import json
 import pandas as pd
 import io
+import pickle
+import base64
 
 from airflow import DAG
 from airflow.providers.standard.operators.python import PythonOperator
 
-# ETL functions
+# Custom ETL functions
 from etl.extract import extract
 from etl.validate import validate
 from etl.transform import transform
 from etl.load import load
 
+# Base64/Pickle serialization and de-serialization helper functions
+def serialize_df(df):
+    return base64.b64encode(pickle.dumps(df)).decode("utf-8")
+
+def deserialize_df(data):
+    return pickle.loads(base64.b64decode(data.encode("utf-8")))
+
+def serialize_dict_of_dfs(d):
+    return json.dumps({key: serialize_df(df) for key, df in d.items()})
+
+def deserialize_dict_of_dfs(data):
+    return {key: deserialize_df(val) for key, val in json.loads(data).items()}
+
 # Task wrapper functions
 def run_extract(**context):
     raw_data = extract()
-    context["ti"].xcom_push(key = "raw_data", value = raw_data.to_json(orient = "table", date_format = "iso"))
+    context["ti"].xcom_push(key = "raw_data", value = serialize_df(data))
 
 def run_validate(**context):
-    raw_data = context["ti"].xcom_pull(key = "raw_data", task_ids = "extract_task")
-    validated_data = validate(pd.read_json(io.StringIO(raw_data), orient = "table"))
-    context["ti"].xcom_push(key="validated_data", value = validated_data.to_json(orient = "table", date_format = "iso"))
+    raw_data = deserialize_df(context["ti"].xcom_pull(key = "raw_data", task_ids = "extract_task"))
+    validated_data = validate(raw_data)
+    context["ti"].xcom_push(key = "validated_data", value = serialize_df(validated_data))
 
 def run_transform(**context):
-    validated_data = context["ti"].xcom_pull(key = "validated_data", task_ids = "validate_task")
-    transformed_data = transform(pd.read_json(io.StringIO(validated_data), orient = "table"))
-
-	# Serialize each DataFrame in the dictionary individually
-    serialized = {key: df.to_json() for key, df in transformed_data.items()}
-    context["ti"].xcom_push(key = "transformed_data", value = json.dumps(serialized, default = str))
+    validated_data = deserialize_df(context["ti"].xcom_pull(key = "validated_data", task_ids = "validate_task"))
+    transformed_data = transform(validated_data)
+    context["ti"].xcom_push(key = "transformed_data", value = serialize_dict_of_dfs(transformed_data))
 
 def run_load(**context):
-    transformed_data = context["ti"].xcom_pull(key = "transformed_data", task_ids = "transform_task")
-    
-    # Deserialize back to a dictionary of DataFrames
-    deserialized = {key: pd.read_json(io.StringIO(df_json), orient = "table") for key, df_json in json.loads(transformed_data).items()}
-    load(deserialized)
+    transformed_data = deserialize_dict_of_dfs(context["ti"].xcom_pull(key = "transformed_data", task_ids = "transform_task"))
+    load(transformed_data)
 
 # DAG definition
 with DAG(
