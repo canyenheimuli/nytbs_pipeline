@@ -3,9 +3,17 @@
 name: ETL Pipeline
 
 on:
-  # push: # TO-DO: replace with "schedule" once manual testing finished
-  #   branches: [main] # TO-DO: replace with "- cron: "0 0 * * 5" " once manual testing finished
+  # Manual Run
   workflow_dispatch: 
+    inputs:
+      reason:
+        description: 'Reason for manual run'
+        required: false
+        default: 'Manual test'
+
+  # Scheduled run
+  schedule:
+    - cron: '0 0 * * 5' 
 
 jobs:
   run-etl:
