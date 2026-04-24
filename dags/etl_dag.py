@@ -32,7 +32,7 @@ def deserialize_dict_of_dfs(data):
 # Task wrapper functions
 def run_extract(**context):
     raw_data = extract()
-    context["ti"].xcom_push(key = "raw_data", value = serialize_df(data))
+    context["ti"].xcom_push(key = "raw_data", value = serialize_df(raw_data))
 
 def run_validate(**context):
     raw_data = deserialize_df(context["ti"].xcom_pull(key = "raw_data", task_ids = "extract_task"))
