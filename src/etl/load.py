@@ -35,11 +35,12 @@ def get_azuresqldb_engine() -> Engine:
                   Pwd={password}; \
                   Encrypt=yes; \
                   TrustServerCertificate=no; \
-                  Connection Timeout=200;"
+                  Connection Timeout=200; \
+                  ConnectRetryCount=3"
     
     conn_url = f"mssql+pyodbc:///?odbc_connect={quote_plus(conn_string)}"
     
-    return create_engine(conn_url)
+    return create_engine(conn_url, connect_args={"timeout": 30})
 
 # Conditional table loading function
 def insert_tables(data: dict, engine: Engine) -> None:
