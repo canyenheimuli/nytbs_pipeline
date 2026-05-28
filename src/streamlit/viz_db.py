@@ -5,7 +5,7 @@ from sqlalchemy.engine import Engine
 from urllib.parse import quote_plus
 import streamlit as st
 from datetime import timedelta
-# import pandas as pd # Apparently not needed for now
+import pandas as pd
 
 # Get engine for viz queries fn.
 @st.cache_resource
@@ -39,7 +39,7 @@ def viz_engine() -> Engine:
 
 # Weekly lists query fn.
 @st.cache_data(ttl=timedelta(days=7))
-def query_latest_weeklies(list_id: int) -> list[tuple[Any, ...]]:
+def query_latest_weeklies(list_id: int) -> pd.DataFrame:
     '''
     Queries DB for the latest weekly 
     titles for a supplied list ID
@@ -67,11 +67,11 @@ def query_latest_weeklies(list_id: int) -> list[tuple[Any, ...]]:
         df = conn.execute(query, {"list_id": list_id}).fetchall()
     
     # Output
-    return df
+    return pd.DataFrame(df)
 
 # Monthly lists query fn.
 @st.cache_data(ttl=timedelta(days=7))
-def query_latest_monthlies(list_id: int) -> list[tuple[Any, ...]]:
+def query_latest_monthlies(list_id: int) -> pd.DataFrame:
     '''
     Queries DB for the latest monthly 
     titles for a supplied list ID
@@ -99,4 +99,4 @@ def query_latest_monthlies(list_id: int) -> list[tuple[Any, ...]]:
         df = conn.execute(query, {"list_id": list_id}).fetchall()
     
     # Output
-    return df
+    return pd.DataFrame(df)
