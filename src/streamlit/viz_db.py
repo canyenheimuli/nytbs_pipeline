@@ -18,7 +18,7 @@ def viz_engine() -> Engine:
     database = st.secrets["AZURE_SQL_DATABASE"]
     username = st.secrets["AZURE_SQL_USERNAME"]
     password = st.secrets["AZURE_SQL_PASSWORD"]
-    driver = "{ODBC Driver 18 for SQL Server}"
+    driver = "{ODBC Driver 17 for SQL Server}" # Streamlit errors with v18 lately
 
     # Create string and connect using engine
     conn_string = f"Driver={driver}; \
