@@ -1,10 +1,28 @@
 # Packages
+import socks
+import socket
 from sqlalchemy import create_engine, text
 from sqlalchemy.engine import Engine
 from urllib.parse import quote_plus
 import streamlit as st
 from datetime import timedelta
 import pandas as pd
+
+# Configure Fixie Proxy
+def configure_proxy():
+    # Get URL, parse
+    proxy_url = st.secrets("FIXIE_URL")
+    # Parse out host, port, user, password from the URL
+    import urllib.parse
+    parsed = urllib.parse.urlparse(proxy_url)
+    socks.set_default_proxy(
+        socks.HTTP,
+        parsed.hostname,
+        parsed.port,
+        username=parsed.username,
+        password=parsed.password
+    )
+    socket.socket = socks.socksocket  # monkeypatches all TCP connections
 
 # Get engine for viz queries fn.
 @st.cache_resource
@@ -13,6 +31,8 @@ def viz_engine() -> Engine:
     Returns the SQL Alchemy connection engine 
     for connecting to the Azure SQL DB
     '''
+    # Configure Fixie Proxy first
+    configure_proxy()
     # Params
     server = st.secrets["AZURE_SQL_SERVER"]
     database = st.secrets["AZURE_SQL_DATABASE"]
