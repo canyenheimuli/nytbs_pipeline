@@ -9,19 +9,20 @@ from datetime import timedelta
 import pandas as pd
 
 # Configure Fixie Proxy
-def configure_proxy():
+def configure_proxy() -> None:
     # Get URL, parse
     proxy_url = st.secrets["FIXIE_URL"]
     # Parse out host, port, user, password from the URL
     import urllib.parse
     parsed = urllib.parse.urlparse(proxy_url)
     socks.set_default_proxy(
-        socks.HTTP,
+        socks.SOCKS5,
         parsed.hostname,
         parsed.port,
         username=parsed.username,
         password=parsed.password
     )
+    
     socket.socket = socks.socksocket  # monkeypatches all TCP connections
 
 # Get engine for viz queries fn.
