@@ -1,3 +1,4 @@
+pyodbc
 PySocks
 SQLAlchemy
 streamlit
