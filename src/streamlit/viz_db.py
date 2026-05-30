@@ -11,7 +11,7 @@ import pandas as pd
 # Configure Fixie Proxy
 def configure_proxy():
     # Get URL, parse
-    proxy_url = st.secrets("FIXIE_URL")
+    proxy_url = st.secrets["FIXIE_URL"]
     # Parse out host, port, user, password from the URL
     import urllib.parse
     parsed = urllib.parse.urlparse(proxy_url)
