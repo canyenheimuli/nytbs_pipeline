@@ -56,13 +56,14 @@ def viz_engine() -> Engine:
     return create_engine(
         conn_url,
         connect_args={
-            "encrypt": True, # Azure SQL DB requires encryption
+            "encrypt": True,     # Azure SQL DB requires encryption
+            "tds_version": "7.4" # TDS Version needed for encryption
         },
-        pool_pre_ping=True,  # drops and replaces stale connections
-        pool_size=5,         # max persistent connections in the pool
-        max_overflow=2,      # extra connections allowed under high load
-        pool_timeout=30,     # seconds to wait for a pool connection
-        pool_recycle=1800,   # recycle connections every 30 minutes
+        pool_pre_ping=True,      # drops and replaces stale connections
+        pool_size=5,             # max persistent connections in the pool
+        max_overflow=2,          # extra connections allowed under high load
+        pool_timeout=30,         # seconds to wait for a pool connection
+        pool_recycle=1800,       # recycle connections every 30 minutes
     )
 
 # Weekly lists query fn.
