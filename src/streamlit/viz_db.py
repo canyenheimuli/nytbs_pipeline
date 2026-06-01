@@ -56,8 +56,7 @@ def viz_engine() -> Engine:
     return create_engine(
         conn_url,
         connect_args={
-            "encrypt": True,     # Azure SQL DB requires encryption
-            "tds_version": "7.4" # TDS Version needed for encryption
+            "tds_version": "7.4" # TDS Version needed for (auto?) encryption
         },
         pool_pre_ping=True,      # drops and replaces stale connections
         pool_size=5,             # max persistent connections in the pool
