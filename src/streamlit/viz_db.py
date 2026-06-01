@@ -122,7 +122,7 @@ def query_latest_monthlies(list_id: int) -> pd.DataFrame:
         LEFT JOIN monthly_lists AS m
             ON b.isbn13 = m.isbn13
         WHERE m.retrieval_date = (SELECT MAX(retrieval_date) FROM monthly_lists)
-            AND w.list_id = :list_id;
+            AND m.list_id = :list_id;
         """
     )
     
