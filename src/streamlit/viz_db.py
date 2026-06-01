@@ -3,6 +3,7 @@ import urllib.parse
 from urllib.parse import quote_plus
 from sqlalchemy import create_engine, event, text
 from sqlalchemy.engine import Engine
+import pytds
 from datetime import timedelta
 import streamlit as st
 import pandas as pd
