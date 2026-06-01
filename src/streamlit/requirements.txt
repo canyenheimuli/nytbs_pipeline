@@ -1,4 +1,3 @@
-pyodbc
-PySocks
-SQLAlchemy
+sqlalchemy
+python-tds
 streamlit
