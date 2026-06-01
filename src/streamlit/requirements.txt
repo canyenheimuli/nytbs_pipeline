@@ -1,4 +1,5 @@
-python-tds==1.17.1
+PySocks
+python-tds
 sqlalchemy==1.4.52
 sqlalchemy-pytds
-streamlit==1.58.0
+streamlit
