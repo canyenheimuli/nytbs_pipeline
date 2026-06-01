@@ -1,5 +1,6 @@
 certifi
-pyOpenSSL
+cryptography==41.0.7
+pyOpenSSL==23.2.0
 PySocks
 python-tds
 sqlalchemy==1.4.52
