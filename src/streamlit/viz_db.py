@@ -14,18 +14,21 @@ def viz_engine() -> Engine:
     Creates and returns a SQLAlchemy engine connected to the Azure SQL
     database via a Fixie SOCKS proxy, using pytds as the backend driver.
     """
-    # Proxy
-    proxy_url = st.secrets["FIXIE_URL"]
-    if not proxy_url:
-        raise ValueError("PROXY_URL not set in Streamlit secrets")
+    # Proxy (Fixie)
+    fixie_url = st.secrets["FIXIE_URL"]
+    if not fixie_url:
+        raise ValueError("Fixie URL not set in Streamlit secrets")
+
+    if not fixie_url.startswith(('http://', 'https://')):
+        fixie_url = 'http://' + fixie_url
     
-    parsed_proxy = urllib.parse.urlparse(proxy_url)
-    if not all([parsed_proxy.hostname, parsed_proxy.port,
-                parsed_proxy.username, parsed_proxy.password]):
-        raise ValueError(f"PROXY_URL could not be fully parsed: {proxy_url}")
+    parsed_url = urllib.parse.urlparse(fixie_url)
+    if not all([parsed_url.hostname, parsed_url.port,
+                parsed_url.username, parsed_url.password]):
+        raise ValueError(f"Fixie URL could not be fully parsed: {fixie_url}")
 
     # DB Params
-    server = st.secrets["AZURE_SQL_SERVER"]
+    server   = st.secrets["AZURE_SQL_SERVER"]
     database = st.secrets["AZURE_SQL_DATABASE"]
     username = st.secrets["AZURE_SQL_USERNAME"]
     password = st.secrets["AZURE_SQL_PASSWORD"]
@@ -36,14 +39,14 @@ def viz_engine() -> Engine:
         f"@{server}/{database}?charset=utf8"
     )
 
-    # Engine
+    # Output (Engine)
     return create_engine(
         conn_url,
         connect_args={
-            "proxy_hostname": parsed_proxy.hostname,
-            "proxy_port":     parsed_proxy.port,
-            "proxy_username": parsed_proxy.username,
-            "proxy_password": parsed_proxy.password,
+            "proxy_hostname": parsed_url.hostname,
+            "proxy_port":     parsed_url.port,
+            "proxy_username": parsed_url.username,
+            "proxy_password": parsed_url.password,
             "timeout":        30,    # seconds before connection attempt fails
             "login_timeout":  30,    # seconds to wait for login
         },
