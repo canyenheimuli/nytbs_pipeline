@@ -1,4 +1,5 @@
 certifi
+pyOpenSSL
 PySocks
 python-tds
 sqlalchemy==1.4.52
