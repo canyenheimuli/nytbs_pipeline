@@ -1,61 +1,58 @@
 # Packages
-import socks
-import socket
+import urllib.parse
+from urllib.parse import quote_plus
 from sqlalchemy import create_engine, text
 from sqlalchemy.engine import Engine
-from urllib.parse import quote_plus
-import streamlit as st
 from datetime import timedelta
+import streamlit as st
 import pandas as pd
 
-# Configure Fixie Proxy
-def configure_proxy() -> None:
-    # Get URL, parse
-    proxy_url = st.secrets["FIXIE_URL"]
-    # Parse out host, port, user, password from the URL
-    import urllib.parse
-    parsed = urllib.parse.urlparse(proxy_url)
-    socks.set_default_proxy(
-        socks.SOCKS5,
-        parsed.hostname,
-        parsed.port,
-        username=parsed.username,
-        password=parsed.password
-    )
-    
-    socket.socket = socks.socksocket  # monkeypatches all TCP connections
-
-# Get engine for viz queries fn.
+# Create Engine fn
 @st.cache_resource
 def viz_engine() -> Engine:
-    '''
-    Returns the SQL Alchemy connection engine 
-    for connecting to the Azure SQL DB
-    '''
-    # Configure Fixie Proxy first
-    configure_proxy()
-    # Params
+    """
+    Creates and returns a SQLAlchemy engine connected to the Azure SQL
+    database via a Fixie SOCKS proxy, using pytds as the backend driver.
+    """
+    # Proxy
+    proxy_url = st.secrets["PROXY_URL"]
+    if not proxy_url:
+        raise ValueError("PROXY_URL not set in Streamlit secrets")
+    
+    parsed_proxy = urllib.parse.urlparse(proxy_url)
+    if not all([parsed_proxy.hostname, parsed_proxy.port,
+                parsed_proxy.username, parsed_proxy.password]):
+        raise ValueError(f"PROXY_URL could not be fully parsed: {proxy_url}")
+
+    # DB Params
     server = st.secrets["AZURE_SQL_SERVER"]
     database = st.secrets["AZURE_SQL_DATABASE"]
     username = st.secrets["AZURE_SQL_USERNAME"]
     password = st.secrets["AZURE_SQL_PASSWORD"]
-    driver = "{ODBC Driver 17 for SQL Server}" # Streamlit errors with v18 lately
 
-    # Create string and connect using engine
-    conn_string = f"Driver={driver}; \
-                  Server=tcp:{server},1433; \
-                  Database={database}; \
-                  Uid={username}; \
-                  Pwd={password}; \
-                  Encrypt=yes; \
-                  TrustServerCertificate=no; \
-                  Connection Timeout=200; \
-                  ConnectRetryCount=3"
-    
-    conn_url = f"mssql+pyodbc:///?odbc_connect={quote_plus(conn_string)}"
-    
-    # Output
-    return create_engine(conn_url, connect_args={"timeout": 30})
+    # Connection URL (pytds)
+    conn_url = (
+        f"mssql+pytds://{quote_plus(username)}:{quote_plus(password)}"
+        f"@{server}/{database}?charset=utf8"
+    )
+
+    # Engine
+    return create_engine(
+        conn_url,
+        connect_args={
+            "proxy_hostname": parsed_proxy.hostname,
+            "proxy_port":     parsed_proxy.port,
+            "proxy_username": parsed_proxy.username,
+            "proxy_password": parsed_proxy.password,
+            "timeout":        30,    # seconds before connection attempt fails
+            "login_timeout":  30,    # seconds to wait for login
+        },
+        pool_pre_ping=True,          # drops and replaces stale connections
+        pool_size=5,                 # max persistent connections in the pool
+        max_overflow=2,              # extra connections allowed under high load
+        pool_timeout=30,             # seconds to wait for a pool connection
+        pool_recycle=1800,           # recycle connections every 30 minutes
+    )
 
 # Weekly lists query fn.
 @st.cache_data(ttl=timedelta(days=7))
