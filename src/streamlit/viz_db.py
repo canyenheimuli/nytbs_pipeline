@@ -15,7 +15,7 @@ def viz_engine() -> Engine:
     database via a Fixie SOCKS proxy, using pytds as the backend driver.
     """
     # Proxy
-    proxy_url = st.secrets["PROXY_URL"]
+    proxy_url = st.secrets["FIXIE_URL"]
     if not proxy_url:
         raise ValueError("PROXY_URL not set in Streamlit secrets")
     
