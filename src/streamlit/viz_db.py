@@ -22,8 +22,8 @@ def viz_engine() -> Engine:
     if not fixie_url:
         raise ValueError("Fixie URL not set in Streamlit secrets")
 
-    if not fixie_url.startswith(('http://', 'https://')):
-        fixie_url = 'http://' + fixie_url
+    if not fixie_url.startswith(("socks5://", "socks4://", "http://")):
+        fixie_url = "socks5://" + fixie_url
     
     parsed_url = urllib.parse.urlparse(fixie_url)
     if not all([parsed_url.hostname, parsed_url.port,
