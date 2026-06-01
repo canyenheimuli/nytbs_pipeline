@@ -3,6 +3,7 @@ import socks
 import socket
 import urllib.parse
 from urllib.parse import quote_plus
+import certifi
 from sqlalchemy import create_engine, event, text
 from sqlalchemy.engine import Engine
 import pytds
@@ -52,11 +53,13 @@ def viz_engine() -> Engine:
         f"@{server}/{database}?charset=utf8"
     )
 
+    cafile = certifi.where()
+
     # Output (Engine)
     return create_engine(
         conn_url,
         connect_args={
-            "tds_version": 7.4   # TDS Version needed for (auto?) encryption
+            "cafile": cafile,   # CA file for encryption
         },
         pool_pre_ping=True,      # drops and replaces stale connections
         pool_size=5,             # max persistent connections in the pool
