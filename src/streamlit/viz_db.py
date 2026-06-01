@@ -1,4 +1,6 @@
 # Packages
+import socks
+import socket
 import urllib.parse
 from urllib.parse import quote_plus
 from sqlalchemy import create_engine, event, text
@@ -28,6 +30,16 @@ def viz_engine() -> Engine:
                 parsed_url.username, parsed_url.password]):
         raise ValueError(f"Fixie URL could not be fully parsed: {fixie_url}")
 
+    # Monkeypatch before engine creation
+    socks.set_default_proxy(
+        socks.SOCKS5,
+        parsed_url.hostname,
+        parsed_url.port,
+        username=parsed_url.username,
+        password=parsed_url.password
+    )
+    socket.socket = socks.socksocket
+    
     # DB Params
     server   = st.secrets["AZURE_SQL_SERVER"]
     database = st.secrets["AZURE_SQL_DATABASE"]
@@ -43,19 +55,11 @@ def viz_engine() -> Engine:
     # Output (Engine)
     return create_engine(
         conn_url,
-        connect_args={
-            "proxy_hostname": parsed_url.hostname,
-            "proxy_port":     parsed_url.port,
-            "proxy_username": parsed_url.username,
-            "proxy_password": parsed_url.password,
-            "timeout":        30,    # seconds before connection attempt fails
-            "login_timeout":  30,    # seconds to wait for login
-        },
-        pool_pre_ping=True,          # drops and replaces stale connections
-        pool_size=5,                 # max persistent connections in the pool
-        max_overflow=2,              # extra connections allowed under high load
-        pool_timeout=30,             # seconds to wait for a pool connection
-        pool_recycle=1800,           # recycle connections every 30 minutes
+        pool_pre_ping=True, # drops and replaces stale connections
+        pool_size=5,        # max persistent connections in the pool
+        max_overflow=2,     # extra connections allowed under high load
+        pool_timeout=30,    # seconds to wait for a pool connection
+        pool_recycle=1800,  # recycle connections every 30 minutes
     )
 
 # Weekly lists query fn.
