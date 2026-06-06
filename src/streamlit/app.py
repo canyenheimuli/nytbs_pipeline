@@ -63,9 +63,9 @@ with tab_2:
             st.header(list_name)
             
             # Break up list into chunks with length 5
-            for i in range(0, len(weekly_lists), cols_per_row):
+            for i in range(0, len(weekly_list), cols_per_row):
                 # Subset data for viz row
-                weeklies_row = weekly_lists[i:i + cols_per_row]
+                weeklies_row = weekly_list[i:i + cols_per_row]
                 
                 # Create the row layout dynamically
                 r_cols = st.columns(cols_per_row)
@@ -107,9 +107,9 @@ with tab_3:
             st.header(list_name)
         
             # Break up list into chunks with length 5
-            for i in range(0, len(monthly_lists), cols_per_row):
+            for i in range(0, len(monthly_list), cols_per_row):
                 # Subset data for viz row
-                monthlies_row = monthly_lists[i:i + cols_per_row]
+                monthlies_row = monthly_list[i:i + cols_per_row]
                 
                 # Create the row layout dynamically
                 r_cols = st.columns(cols_per_row)
@@ -135,4 +135,3 @@ with tab_3:
     
                             # Book info
                             st.markdown(f"\\#{disp_rank}: {disp_title} by {disp_author}")
-
