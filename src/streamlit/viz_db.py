@@ -116,6 +116,12 @@ def query_monthlies(date: str = None) -> pd.DataFrame: # TO-DO: Update type hint
     Queries DB for the latest monthly 
     titles for a supplied list ID
     '''
+    # Set up date if None
+    if not date:
+        date = "(SELECT MAX(retrieval_date) FROM monthly_lists)"
+    else:
+        date = date
+    
     # Init engine
     engine = viz_engine()
     
@@ -130,7 +136,7 @@ def query_monthlies(date: str = None) -> pd.DataFrame: # TO-DO: Update type hint
             b.book_image AS image
         FROM books AS b
         LEFT JOIN monthly_lists AS m
-            ON b.isbn13 = w.isbn13
+            ON b.isbn13 = m.isbn13
         LEFT JOIN list_info AS l
             ON m.list_id = l.list_id
         WHERE m.retrieval_date = :date
