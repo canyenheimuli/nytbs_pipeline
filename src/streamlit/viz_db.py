@@ -72,40 +72,37 @@ def viz_engine() -> Engine:
 @st.cache_data(ttl=timedelta(days=7))
 def query_weeklies(date: str = None) -> pd.DataFrame: # TO-DO: Update type hint and control flow with expected date arg structure
     '''
-    Queries DB for the latest weekly 
-    titles for all list IDs
+    Queries DB for all weekly lists
+    for a given date (latest by default)
     '''
-    # Set up date if None
-    if date is None:
-        date = "(SELECT MAX(retrieval_date) FROM weekly_lists)"
-    else:
-        date = date
-    
-    # Init engine
+    # Create engine
     engine = viz_engine()
-    
-    # Make and run query
-    query = text(
-        """
-        SELECT 
-            l.list_name AS list_name,
-            w.book_rank AS rank,
-            b.title AS title,
-            b.author AS author,
-            b.book_image AS image
-        FROM books AS b
-        LEFT JOIN weekly_lists AS w
-            ON b.isbn13 = w.isbn13
-        LEFT JOIN list_info AS l
-            ON w.list_id = l.list_id
-        WHERE w.retrieval_date = :date
-        ORDER BY l.list_name, rank;
-        """
-    )
-    
+
+    # Connect, run queries
     with engine.connect() as conn:
+        
+        # Get date as an object
+        if date is None:
+            result = conn.execute(text("SELECT MAX(retrieval_date) FROM weekly_lists"))
+            date = result.scalar() 
+
+        # Run main query
+        query = text("""
+            SELECT 
+                l.list_name AS list_name,
+                w.book_rank AS rank,
+                b.title AS title,
+                b.author AS author,
+                b.book_image AS image
+            FROM books AS b
+            LEFT JOIN weekly_lists AS w ON b.isbn13 = w.isbn13
+            LEFT JOIN list_info AS l ON w.list_id = l.list_id
+            WHERE w.retrieval_date = :date
+            ORDER BY l.list_name, rank;
+        """)
+
         df = conn.execute(query, {"date": date}).fetchall()
-    
+
     # Output
     return pd.DataFrame(df)
 
@@ -113,39 +110,38 @@ def query_weeklies(date: str = None) -> pd.DataFrame: # TO-DO: Update type hint 
 @st.cache_data(ttl=timedelta(days=7))
 def query_monthlies(date: str = None) -> pd.DataFrame: # TO-DO: Update type hint and control flow with expected date arg structure
     '''
-    Queries DB for the latest monthly 
-    titles for a supplied list ID
+    Queries DB for all monthly lists
+    for a given date (latest by default)
     '''
-    # Set up date if None
-    if date is None:
-        date = "(SELECT MAX(retrieval_date) FROM monthly_lists)"
-    else:
-        date = date
-    
-    # Init engine
+    # Create engine
     engine = viz_engine()
-    
-    # Make and run query
-    query = text(
-        """
-        SELECT 
-            l.list_name AS list_name,
-            m.book_rank AS rank,
-            b.title AS title,
-            b.author AS author,
-            b.book_image AS image
-        FROM books AS b
-        LEFT JOIN monthly_lists AS m
-            ON b.isbn13 = m.isbn13
-        LEFT JOIN list_info AS l
-            ON m.list_id = l.list_id
-        WHERE m.retrieval_date = :date
-        ORDER BY l.list_name, rank;
-        """
-    )
-    
+
+    # Connect, run queries
     with engine.connect() as conn:
+        
+        # Get date as an object
+        if date is None:
+            result = conn.execute(text("SELECT MAX(retrieval_date) FROM monthly_lists"))
+            date = result.scalar() 
+
+        # Run main query
+        query = text("""
+            SELECT 
+                l.list_name AS list_name,
+                m.book_rank AS rank,
+                b.title AS title,
+                b.author AS author,
+                b.book_image AS image
+            FROM books AS b
+            LEFT JOIN monthly_lists AS m
+                ON b.isbn13 = m.isbn13
+            LEFT JOIN list_info AS l
+                ON m.list_id = l.list_id
+            WHERE m.retrieval_date = :date
+            ORDER BY l.list_name, rank;
+        """)
+
         df = conn.execute(query, {"date": date}).fetchall()
-    
+
     # Output
     return pd.DataFrame(df)
