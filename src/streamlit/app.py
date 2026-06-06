@@ -89,7 +89,7 @@ with tab_2:
                         disp_author = r_author if r_author is not None else "Unknown Author"
 
                         # Book info
-                        st.markdown(f"\#{display_rank}: {display_title} by {display_author}")
+                        st.markdown(f"\\#{display_rank}: {display_title} by {display_author}")
                         
 # Monthlies Tab
 with tab_3:
@@ -131,4 +131,4 @@ with tab_3:
                         disp_author = r_author if r_author is not None else "Unknown Author"
 
                         # Book info
-                        st.markdown(f"\#{display_rank}: {display_title} by {display_author}")
+                        st.markdown(f"\\#{display_rank}: {display_title} by {display_author}")
