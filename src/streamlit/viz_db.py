@@ -102,10 +102,10 @@ def query_weeklies(date: str = None) -> pd.DataFrame: # TO-DO: Update type hint 
             ORDER BY l.list_name, rank;
         """)
 
-        df = pd.read_sql(query, conn, params={"date": date})
-
+        df = conn.execute(query, {"list_id": list_id}).fetchall()
+    
     # Output
-    return df
+    return pd.DataFrame(df)
 
 # Monthly lists query fn.
 @st.cache_data(ttl=timedelta(days=7))
@@ -143,7 +143,7 @@ def query_monthlies(date: str = None) -> pd.DataFrame: # TO-DO: Update type hint
             ORDER BY l.list_name, rank;
         """)
 
-        df = pd.read_sql(query, conn, params={"date": date})
-
+        df = conn.execute(query, {"list_id": list_id}).fetchall()
+    
     # Output
-    return df
+    return pd.DataFrame(df)
