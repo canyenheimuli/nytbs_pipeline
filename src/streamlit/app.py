@@ -59,8 +59,8 @@ with tab_2:
     for weekly_list in weeklies_split:
     
         # List Title
-        list_title = weekly_list["list_title"].values[0]
-        st.header(list_title)
+        list_name = weekly_list["list_name"].values[0]
+        st.header(list_name)
         
         # Break up list into chunks with length 5
         for i in range(0, len(weekly_lists), cols_per_row):
@@ -101,8 +101,8 @@ with tab_3:
     for monthly_list in monthlies_split:
     
         # List Title
-        list_title = monthly_list["list_title"].values[0]
-        st.header(list_title)
+        list_name = monthly_list["list_name"].values[0]
+        st.header(list_name)
     
         # Break up list into chunks with length 5
         for i in range(0, len(monthly_lists), cols_per_row):
