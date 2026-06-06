@@ -9,29 +9,27 @@ monthly_lists = vdb.query_monthlies()
 
 # Arrange weeklies
 w_lists_order = [704, 708, 1, 2, 17, 24, 10, 14, 13, 7] # Lists are ordered subjectively based on list popularity and intended age ranges
+
 weekly_lists['list_id_sorted'] = pd.Categorical(
     weekly_lists['list_id'], 
     categories=w_lists_order, 
     ordered=True
 )
-
 weekly_lists = weekly_lists.sort_values(by=['list_id_sorted', 'rank'])
-weekly_lists = weekly_lists.drop(columns='list_id_sorted')
 
-weeklies_split = [group for _, group in weekly_lists.groupby('list_id')]
+weeklies_split = [group for _, group in weekly_lists.groupby('list_id_sorted', observed=True)]
 
 # Arrange monthlies
 m_lists_order = [10018, 301, 302, 10004, 532, 304, 719, 10016, 10015, 303] # Lists are ordered subjectively based on list popularity and intended age ranges
+
 monthly_lists['list_id_sorted'] = pd.Categorical(
     monthly_lists['list_id'], 
     categories=m_lists_order, 
     ordered=True
 )
-
 monthly_lists = monthly_lists.sort_values(by=['list_id_sorted', 'rank'])
-monthly_lists = monthly_lists.drop(columns='list_id_sorted')
 
-monthlies_split = [group for _, group in monthly_lists.groupby('list_id')]
+monthlies_split = [group for _, group in monthly_lists.groupby('list_id_sorted', observed=True)]
 
 # Viz Params
 cols_per_row = 5
