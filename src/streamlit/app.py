@@ -74,7 +74,7 @@ with tab_2:
                 for r_rank, r_title, r_author, r_image, r_col in zip(weeklies_row['rank'], weeklies_row['title'], weeklies_row['author'], weeklies_row['image'], r_cols):
                     with r_col:
                         # Check for essential data
-                        if r_rank is None and r_title is None and r_author is None:
+                        if r_rank == "" and r_title == "" and r_author == "":
                             # Say rank is empty
                             st.caption("Rank empty")
                         else:
@@ -85,9 +85,9 @@ with tab_2:
                                 st.caption("No image available")
                             
                             # Fallbacks for individual text elements
-                            disp_rank = r_rank if r_rank is not None else "N/A"
-                            disp_title = r_title if r_title is not None else "Unknown Title"
-                            disp_author = r_author if r_author is not None else "Unknown Author"
+                            disp_rank = r_rank if r_rank != "" else "N/A"
+                            disp_title = r_title if r_title != "" else "Unknown Title"
+                            disp_author = r_author if r_author != "" else "Unknown Author"
     
                             # Book info
                             st.markdown(f"\\#{disp_rank}: {disp_title} by {disp_author}")
@@ -118,7 +118,7 @@ with tab_3:
                 for r_rank, r_title, r_author, r_image, r_col in zip(monthlies_row['rank'], monthlies_row['title'], monthlies_row['author'], monthlies_row['image'], r_cols):
                     with r_col:
                         # Check for essential data
-                        if r_rank is None and r_title is None and r_author is None:
+                        if r_rank == "" and r_title == "" and r_author == "":
                             # Say rank is empty
                             st.caption("Rank empty")
                         else:
@@ -129,9 +129,9 @@ with tab_3:
                                 st.caption("No image available")
                             
                             # Fallbacks for individual text elements
-                            disp_rank = r_rank if r_rank is not None else "N/A"
-                            disp_title = r_title if r_title is not None else "Unknown Title"
-                            disp_author = r_author if r_author is not None else "Unknown Author"
+                            disp_rank = r_rank if r_rank != "" else "N/A"
+                            disp_title = r_title if r_title != "" else "Unknown Title"
+                            disp_author = r_author if r_author != "" else "Unknown Author"
     
                             # Book info
                             st.markdown(f"\\#{disp_rank}: {disp_title} by {disp_author}")
