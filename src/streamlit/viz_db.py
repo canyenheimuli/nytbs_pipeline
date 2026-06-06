@@ -89,6 +89,7 @@ def query_weeklies(date: str = None) -> pd.DataFrame: # TO-DO: Update type hint 
         # Run main query
         query = text("""
             SELECT 
+                w.list_id AS list_id,
                 l.list_name AS list_name,
                 w.book_rank AS rank,
                 b.title AS title,
@@ -127,6 +128,7 @@ def query_monthlies(date: str = None) -> pd.DataFrame: # TO-DO: Update type hint
         # Run main query
         query = text("""
             SELECT 
+                m.list_id AS list_id,
                 l.list_name AS list_name,
                 m.book_rank AS rank,
                 b.title AS title,
