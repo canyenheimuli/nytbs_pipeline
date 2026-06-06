@@ -102,7 +102,7 @@ def query_weeklies(date: str = None) -> pd.DataFrame: # TO-DO: Update type hint 
             ORDER BY l.list_name, rank;
         """)
 
-        df = conn.execute(query, {"list_id": list_id}).fetchall()
+        df = conn.execute(query, {"date": date}).fetchall()
     
     # Output
     return pd.DataFrame(df)
@@ -143,7 +143,7 @@ def query_monthlies(date: str = None) -> pd.DataFrame: # TO-DO: Update type hint
             ORDER BY l.list_name, rank;
         """)
 
-        df = conn.execute(query, {"list_id": list_id}).fetchall()
+        df = conn.execute(query, {"date": date}).fetchall()
     
     # Output
     return pd.DataFrame(df)
