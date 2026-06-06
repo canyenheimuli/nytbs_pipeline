@@ -74,8 +74,8 @@ with tab_2:
                 for r_rank, r_title, r_author, r_image, r_col in zip(weeklies_row['rank'], weeklies_row['title'], weeklies_row['author'], weeklies_row['image'], r_cols):
                     with r_col:
                         # Check for essential data
-                        if r_rank == "" and r_title == "" and r_author == "":
-                            # Say rank is empty
+                        if r_title == "" and r_author == "" and r_image == "":
+                            # Control flow for empty ranking data
                             st.caption("Rank empty")
                         else:
                             # Render image if it exists
@@ -118,8 +118,8 @@ with tab_3:
                 for r_rank, r_title, r_author, r_image, r_col in zip(monthlies_row['rank'], monthlies_row['title'], monthlies_row['author'], monthlies_row['image'], r_cols):
                     with r_col:
                         # Check for essential data
-                        if r_rank == "" and r_title == "" and r_author == "":
-                            # Say rank is empty
+                        if r_title == "" and r_author == "" and r_image == "":
+                            # Control flow for empty ranking data
                             st.caption("Rank empty")
                         else:
                             # Render image if it exists
