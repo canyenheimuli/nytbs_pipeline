@@ -56,39 +56,41 @@ with tab_2:
     # Loop through weekly lists in df vector
     for weekly_list in weeklies_split:
     
-        # List Title
-        list_name = weekly_list["list_name"].values[0]
-        st.header(list_name)
-        
-        # Break up list into chunks with length 5
-        for i in range(0, len(weekly_lists), cols_per_row):
-            # Subset data for viz row
-            weeklies_row = weekly_lists[i:i + cols_per_row]
+        # Containerize (card widget-ize) each list
+        with st.container():
+            # List title
+            list_name = weekly_list["list_name"].values[0]
+            st.header(list_name)
             
-            # Create the row layout dynamically
-            r_cols = st.columns(cols_per_row)
-            
-            # Loop parallel over inputs into st_cols
-            for r_rank, r_title, r_author, r_image, r_col in zip(weeklies_row['rank'], weeklies_row['title'], weeklies_row['author'], weeklies_row['image'], r_cols):
-                with r_col:
-                    # Check for essential data
-                    if r_rank is None and r_title is None and r_author is None:
-                        # Say rank is empty
-                        st.caption("Rank empty")
-                    else:
-                        # Render image if it exists
-                        if r_image:
-                            st.image(r_image, width=150)
+            # Break up list into chunks with length 5
+            for i in range(0, len(weekly_lists), cols_per_row):
+                # Subset data for viz row
+                weeklies_row = weekly_lists[i:i + cols_per_row]
+                
+                # Create the row layout dynamically
+                r_cols = st.columns(cols_per_row)
+                
+                # Loop parallel over inputs into st_cols
+                for r_rank, r_title, r_author, r_image, r_col in zip(weeklies_row['rank'], weeklies_row['title'], weeklies_row['author'], weeklies_row['image'], r_cols):
+                    with r_col:
+                        # Check for essential data
+                        if r_rank is None and r_title is None and r_author is None:
+                            # Say rank is empty
+                            st.caption("Rank empty")
                         else:
-                            st.caption("No image available")
-                        
-                        # Fallbacks for individual text elements
-                        disp_rank = r_rank if r_rank is not None else "N/A"
-                        disp_title = r_title if r_title is not None else "Unknown Title"
-                        disp_author = r_author if r_author is not None else "Unknown Author"
-
-                        # Book info
-                        st.markdown(f"\\#{disp_rank}: {disp_title} by {disp_author}")
+                            # Render image if it exists
+                            if r_image:
+                                st.image(r_image, width=150)
+                            else:
+                                st.caption("No image available")
+                            
+                            # Fallbacks for individual text elements
+                            disp_rank = r_rank if r_rank is not None else "N/A"
+                            disp_title = r_title if r_title is not None else "Unknown Title"
+                            disp_author = r_author if r_author is not None else "Unknown Author"
+    
+                            # Book info
+                            st.markdown(f"\\#{disp_rank}: {disp_title} by {disp_author}")
                         
 # Monthlies Tab
 with tab_3:
@@ -97,37 +99,40 @@ with tab_3:
     
     # Loop through weekly lists in df vector
     for monthly_list in monthlies_split:
-    
-        # List Title
-        list_name = monthly_list["list_name"].values[0]
-        st.header(list_name)
-    
-        # Break up list into chunks with length 5
-        for i in range(0, len(monthly_lists), cols_per_row):
-            # Subset data for viz row
-            monthlies_row = monthly_lists[i:i + cols_per_row]
-            
-            # Create the row layout dynamically
-            r_cols = st.columns(cols_per_row)
-            
-            # Loop parallel over inputs into st_cols
-            for r_rank, r_title, r_author, r_image, r_col in zip(monthlies_row['rank'], monthlies_row['title'], monthlies_row['author'], monthlies_row['image'], r_cols):
-                with r_col:
-                    # Check for essential data
-                    if r_rank is None and r_title is None and r_author is None:
-                        # Say rank is empty
-                        st.caption("Rank empty")
-                    else:
-                        # Render image if it exists
-                        if r_image:
-                            st.image(r_image, width=150)
-                        else:
-                            st.caption("No image available")
-                        
-                        # Fallbacks for individual text elements
-                        disp_rank = r_rank if r_rank is not None else "N/A"
-                        disp_title = r_title if r_title is not None else "Unknown Title"
-                        disp_author = r_author if r_author is not None else "Unknown Author"
 
-                        # Book info
-                        st.markdown(f"\\#{disp_rank}: {disp_title} by {disp_author}")
+        # Containerize (card widget-ize) each list
+        with st.container():
+            # List Title
+            list_name = monthly_list["list_name"].values[0]
+            st.header(list_name)
+        
+            # Break up list into chunks with length 5
+            for i in range(0, len(monthly_lists), cols_per_row):
+                # Subset data for viz row
+                monthlies_row = monthly_lists[i:i + cols_per_row]
+                
+                # Create the row layout dynamically
+                r_cols = st.columns(cols_per_row)
+                
+                # Loop parallel over inputs into st_cols
+                for r_rank, r_title, r_author, r_image, r_col in zip(monthlies_row['rank'], monthlies_row['title'], monthlies_row['author'], monthlies_row['image'], r_cols):
+                    with r_col:
+                        # Check for essential data
+                        if r_rank is None and r_title is None and r_author is None:
+                            # Say rank is empty
+                            st.caption("Rank empty")
+                        else:
+                            # Render image if it exists
+                            if r_image:
+                                st.image(r_image, width=150)
+                            else:
+                                st.caption("No image available")
+                            
+                            # Fallbacks for individual text elements
+                            disp_rank = r_rank if r_rank is not None else "N/A"
+                            disp_title = r_title if r_title is not None else "Unknown Title"
+                            disp_author = r_author if r_author is not None else "Unknown Author"
+    
+                            # Book info
+                            st.markdown(f"\\#{disp_rank}: {disp_title} by {disp_author}")
+
