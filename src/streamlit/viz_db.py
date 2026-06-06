@@ -76,7 +76,7 @@ def query_weeklies(date: str = None) -> pd.DataFrame: # TO-DO: Update type hint 
     titles for all list IDs
     '''
     # Set up date if None
-    if not date:
+    if date is None:
         date = "(SELECT MAX(retrieval_date) FROM weekly_lists)"
     else:
         date = date
@@ -117,7 +117,7 @@ def query_monthlies(date: str = None) -> pd.DataFrame: # TO-DO: Update type hint
     titles for a supplied list ID
     '''
     # Set up date if None
-    if not date:
+    if date is None:
         date = "(SELECT MAX(retrieval_date) FROM monthly_lists)"
     else:
         date = date
