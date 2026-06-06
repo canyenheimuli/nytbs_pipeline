@@ -1,6 +1,7 @@
 # Packages
 import streamlit as st
 import viz_db as vdb
+import pandas as pd
 
 # Back-end (data queries)
 weekly_lists = vdb.query_weeklies()
