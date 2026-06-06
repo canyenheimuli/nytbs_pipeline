@@ -70,11 +70,17 @@ def viz_engine() -> Engine:
 
 # Weekly lists query fn.
 @st.cache_data(ttl=timedelta(days=7))
-def query_latest_weeklies(list_id: int) -> pd.DataFrame:
+def query_weeklies(date: str = None) -> pd.DataFrame: # TO-DO: Update type hint and control flow with expected date arg structure
     '''
     Queries DB for the latest weekly 
-    titles for a supplied list ID
+    titles for all list IDs
     '''
+    # Set up date if None
+    if not date:
+        date = "(SELECT MAX(retrieval_date) FROM weekly_lists)"
+    else:
+        date = date
+    
     # Init engine
     engine = viz_engine()
     
@@ -82,6 +88,7 @@ def query_latest_weeklies(list_id: int) -> pd.DataFrame:
     query = text(
         """
         SELECT 
+            l.list_name AS list_name,
             w.book_rank AS rank,
             b.title AS title,
             b.author AS author,
@@ -89,20 +96,22 @@ def query_latest_weeklies(list_id: int) -> pd.DataFrame:
         FROM books AS b
         LEFT JOIN weekly_lists AS w
             ON b.isbn13 = w.isbn13
-        WHERE w.retrieval_date = (SELECT MAX(retrieval_date) FROM weekly_lists)
-            AND w.list_id = :list_id;
+        LEFT JOIN list_info AS l
+            ON w.list_id = l.list_id
+        WHERE w.retrieval_date = :date
+        ORDER BY l.list_name, rank;
         """
     )
     
     with engine.connect() as conn:
-        df = conn.execute(query, {"list_id": list_id}).fetchall()
+        df = conn.execute(query, {"date": date}).fetchall()
     
     # Output
     return pd.DataFrame(df)
 
 # Monthly lists query fn.
 @st.cache_data(ttl=timedelta(days=7))
-def query_latest_monthlies(list_id: int) -> pd.DataFrame:
+def query_monthlies(date: str = None) -> pd.DataFrame: # TO-DO: Update type hint and control flow with expected date arg structure
     '''
     Queries DB for the latest monthly 
     titles for a supplied list ID
@@ -114,20 +123,23 @@ def query_latest_monthlies(list_id: int) -> pd.DataFrame:
     query = text(
         """
         SELECT 
+            l.list_name AS list_name,
             m.book_rank AS rank,
             b.title AS title,
             b.author AS author,
             b.book_image AS image
         FROM books AS b
         LEFT JOIN monthly_lists AS m
-            ON b.isbn13 = m.isbn13
-        WHERE m.retrieval_date = (SELECT MAX(retrieval_date) FROM monthly_lists)
-            AND m.list_id = :list_id;
+            ON b.isbn13 = w.isbn13
+        LEFT JOIN list_info AS l
+            ON m.list_id = l.list_id
+        WHERE m.retrieval_date = :date
+        ORDER BY l.list_name, rank;
         """
     )
     
     with engine.connect() as conn:
-        df = conn.execute(query, {"list_id": list_id}).fetchall()
+        df = conn.execute(query, {"date": date}).fetchall()
     
     # Output
     return pd.DataFrame(df)
