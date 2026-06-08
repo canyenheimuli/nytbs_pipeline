@@ -7,7 +7,7 @@ import certifi
 from sqlalchemy import create_engine, event, text
 from sqlalchemy.engine import Engine
 import pytds
-from datetime import timedelta
+from datetime import date, timedelta
 import streamlit as st
 import pandas as pd
 
@@ -68,25 +68,99 @@ def viz_engine() -> Engine:
         pool_recycle=1800,       # recycle connections every 30 minutes
     )
 
-# Weekly lists query fn.
+# Get avail weeks in db for week filter
 @st.cache_data(ttl=timedelta(days=7))
-def query_weeklies(date: str = None) -> pd.DataFrame: # TO-DO: Update type hint and control flow with expected date arg structure
+def get_avail_weeks() -> list[date]:
     '''
-    Queries DB for all weekly lists
-    for a given date (latest by default)
+    Get (and cache) all unique weeks in
+    db to benchmark for week filter
+    '''
+    # Create engine
+    engine = viz_engine()
+
+    # Connect, get weeks
+    with engine.connect() as conn:
+        query = text("SELECT DISTINCT list_date FROM weekly_lists ORDER BY list_date DESC")
+        rows = conn.execute(query).fetchall()
+
+    # Output (list of dates)
+    return [r[0] for r in rows]
+
+# Find nearest week in available DB weeks to user-supplied date
+def find_nearest_week(selected_date: date, available_weeks: list[date]) -> date:
+    '''
+    Takes a user-supplied date and benchmarks 
+    it to an existing week of pre-prepared available weeks
+    '''
+    past_weeks = [w for w in available_weeks if w <= selected_date]
+    return max(past_weeks) if past_weeks else None
+    
+# Get avail months in db for month filter
+@st.cache_data(ttl=timedelta(days=30))
+def get_avail_months() -> list[date]:
+    '''
+    Get (and cache) all unique months in
+    db to benchmark for month filter
+    '''
+    # Create engine
+    engine = viz_engine()
+
+    # Connect, get weeks
+    with engine.connect() as conn:
+        query = text("""
+            SELECT DISTINCT 
+                list_date_month, 
+                list_date_year 
+            FROM monthly_lists 
+            ORDER BY list_date_year DESC, list_date_month DESC;
+        """)
+        rows = conn.execute(query).fetchall()
+
+    # Output (list of months)
+    return [datetime(r[1], r[0], 1) for r in rows]
+
+# Latest Weeklies Fn.
+@st.cache_data(ttl=timedelta(days=7))
+def query_latest_weeklies() -> pd.DataFrame:
+    '''
+    Queries DB for latest weekly lists
+    (function separated for cache-ing)
     '''
     # Create engine
     engine = viz_engine()
 
     # Connect, run queries
     with engine.connect() as conn:
-        
-        # Get date as an object
-        if date is None:
-            result = conn.execute(text("SELECT MAX(retrieval_date) FROM weekly_lists"))
-            date = result.scalar() 
+        query = text("""
+            SELECT 
+                w.list_id AS list_id,
+                l.list_name AS list_name,
+                w.book_rank AS rank,
+                b.title AS title,
+                b.author AS author,
+                b.book_image AS image
+            FROM books AS b
+            LEFT JOIN weekly_lists AS w ON b.isbn13 = w.isbn13
+            LEFT JOIN list_info AS l ON w.list_id = l.list_id
+            WHERE w.retrieval_date = (SELECT MAX(retrieval_date) FROM weekly_lists)
+            ORDER BY l.list_name, rank;
+        """)
+        df = conn.execute(query).fetchall()
+    
+    # Output
+    return pd.DataFrame(df)
 
-        # Run main query
+# Filtered Weeklies Fn.
+def query_filtered_weeklies(date: date) -> pd.DataFrame:
+    '''
+    Queries DB for all weekly lists
+    for bechmarked (from user-supplied) date
+    '''
+    # Create engine
+    engine = viz_engine()
+
+    # Connect, run queries
+    with engine.connect() as conn:
         query = text("""
             SELECT 
                 w.list_id AS list_id,
@@ -101,31 +175,55 @@ def query_weeklies(date: str = None) -> pd.DataFrame: # TO-DO: Update type hint 
             WHERE w.retrieval_date = :date
             ORDER BY l.list_name, rank;
         """)
-
         df = conn.execute(query, {"date": date}).fetchall()
     
     # Output
     return pd.DataFrame(df)
 
-# Monthly lists query fn.
-@st.cache_data(ttl=timedelta(days=7))
-def query_monthlies(date: str = None) -> pd.DataFrame: # TO-DO: Update type hint and control flow with expected date arg structure
+# Latest Monthlies Fn.
+@st.cache_data(ttl=timedelta(days=30))
+def query_latest_monthlies() -> pd.DataFrame:
     '''
-    Queries DB for all monthly lists
-    for a given date (latest by default)
+    Queries DB for latest monthly lists
+    (function separated for cache-ing)
     '''
     # Create engine
     engine = viz_engine()
 
     # Connect, run queries
     with engine.connect() as conn:
-        
-        # Get date as an object
-        if date is None:
-            result = conn.execute(text("SELECT MAX(retrieval_date) FROM monthly_lists"))
-            date = result.scalar() 
+        query = text("""
+            SELECT 
+                m.list_id AS list_id,
+                l.list_name AS list_name,
+                m.book_rank AS rank,
+                b.title AS title,
+                b.author AS author,
+                b.book_image AS image
+            FROM books AS b
+            LEFT JOIN monthly_lists AS m
+                ON b.isbn13 = m.isbn13
+            LEFT JOIN list_info AS l
+                ON m.list_id = l.list_id
+            WHERE m.retrieval_date = (SELECT MAX(retrieval_date) FROM monthly_lists)
+            ORDER BY l.list_name, rank;
+        """)
+        df = conn.execute(query).fetchall()
+    
+    # Output
+    return pd.DataFrame(df)
 
-        # Run main query
+# Filtered Monthlies Fn.
+def query_filtered_monthlies(date: date) -> pd.DataFrame:
+    '''
+    Queries DB for all monthly lists
+    for bechmarked (from user-supplied) month
+    '''
+    # Create engine
+    engine = viz_engine()
+
+    # Connect, run queries
+    with engine.connect() as conn:
         query = text("""
             SELECT 
                 m.list_id AS list_id,
@@ -142,7 +240,6 @@ def query_monthlies(date: str = None) -> pd.DataFrame: # TO-DO: Update type hint
             WHERE m.retrieval_date = :date
             ORDER BY l.list_name, rank;
         """)
-
         df = conn.execute(query, {"date": date}).fetchall()
     
     # Output
