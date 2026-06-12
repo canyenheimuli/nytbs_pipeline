@@ -57,8 +57,8 @@ with tab_1:
     "Apply filter" to view the lists for that date. To remove a selected filter and view the latest lists, push the "Reset to latest" button.
 
     ## Background
-    The NYT Bestseller Lists are rankings of the most popular books in the United States ordered by recent sales. The lists are prepared using the NYT's \
-    proprietary ranking methodology based on sales volume, variety of points of sale, and other data; and are updated regularly (weekly or \
+    The NYT Bestseller Lists are rankings of the most popular books in the United States ordered by recent sales. The lists are prepared using the \
+    NYT's proprietary ranking methodology based on sales volume, variety of points of sale, and other data; and are updated regularly (weekly or \
     monthly, depending on list type).
 
     Weekly lists are the paper's flagship bestseller book rankings. Weekly lists include the following and several more:
