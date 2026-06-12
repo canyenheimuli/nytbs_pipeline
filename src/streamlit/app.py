@@ -227,9 +227,6 @@ with tab_3:
         # Split data by group for viz
         curr_data_split = app_utils.process_list_df(curr_data, "monthly")
         
-        # Tab Title
-        st.title("Monthly Lists")
-        
         # Loop through weekly lists in df vector
         for monthly_list in curr_data_split:
     
