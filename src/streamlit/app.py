@@ -14,12 +14,14 @@ avail_weeks  = vq.get_avail_weeks()
 avail_months = vq.get_avail_months()
 
 # Viz Params
-current_year = datetime.now().year
 years = list(range(2008, datetime.now().year + 1))
+current_year = datetime.now().year
+
 months = [
     "January", "February", "March", "April", "May", "June", 
     "July", "August", "September", "October", "November", "December"
 ]
+current_month = months[datetime.now().month - 1]
 
 cols_per_row = 5
 
@@ -27,8 +29,7 @@ cols_per_row = 5
 # %% Landing Page Info
 # Landing Page UI
 st.set_page_config(page_title = "NYT BS Lists Dashboard", layout = "wide")
-st.title("NYT Bestseller Lists Historical Viewer")
-st.markdown("Use the tabs below to navigate through different pages.")
+st.title("NYT Bestseller Lists Historical Viewer", anchor=False)
 
 # %% Tabs
 # Tabs
@@ -49,9 +50,38 @@ if "tab_state" not in st.session_state:
 # %% Overview Tab
 with tab_1:
     st.title("Overview")
-    st.write("This dashboard shows the current and historical NYT Bestseller Lists.")
-    st.write("Click on the \"Weekly Lists\" or \"Monthly Lists\" tab to see the lists by category and update frequency.")
-    st.write("Once in a tab view, use the date filters to look up past lists and rankings.")
+    st.markdown("""
+    The NYT Bestseller Lists Historical Viewer allows you to view both the current NYT Bestsellers book lists and the lists of the past.
+
+    To use the historical viewer, click one of the list tabs at the top of this page. Input a date in the "Select a date" input boxes, then press \
+    "Apply filter" to view the lists for that date. To remove a selected filter and view the latest lists, push the "Reset to latest" button.
+
+    ## Background
+    The NYT Bestseller Lists are rankings of the most popular books in the United States ordered by recent sales. The lists are prepared using the NYT's \ 
+    proprietary ranking methodology based on sales volume, variety of points of sale, and other data; and are updated regularly (weekly or \
+    monthly, depending on list type).
+
+    Weekly lists are the paper's flagship bestseller book rankings. Weekly lists include the following and several more:
+    - Combined Print & E-book Fiction
+    - Combined Nonfiction
+    - Advice Books
+    - Young Adult Series
+
+    These lists are updated every Wednesday at approximately 7pm Eastern, and each updated list is then published 11 days later in that week's edition \
+    of the New York Times Book Review. 
+
+    Monthly lists include books of unique formats or audiences, such as the following:
+    - Audio Fiction & Nonfiction
+    - Business
+    - Graphic Novels
+    - Paperback YA, Middle Grade, and Children's books
+
+    These lists are typically updated on the first Wednesday of every month and at the same time as the weekly lists.
+    
+    In this app's internal database, lists are denoted by the date they were updated by the NYT -- _not_ the date the lists were subsequently published in the paper.
+
+    For more information on the Bestseller lists, please see the NYT's [methodology page](https://www.nytimes.com/books/best-sellers/methodology/).
+    """)
 
 # %% Weeklies Tab
 with tab_2:
@@ -175,7 +205,7 @@ with tab_3:
 
     # Get Data Based on State
     if state["view_mode"] == "latest":
-        st.subheader(f"Latest data — month of {avail_months[0]}")
+        st.subheader(f"Latest data — month of {current_month} {current_year}")
         curr_data = monthly_lists_latest
     else:
         st.subheader(f"Filtered data — month of {selected_month} {selected_year}")
