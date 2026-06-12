@@ -7,10 +7,10 @@ import pandas as pd
 
 # %% Back-end data, other objects
 # Cached Data Queries
-weekly_lists_latest = vq.query_latest_weeklies()
-monthly_lists_latest = vq.query_latest_weeklies()
+weekly_lists_latest  = vq.query_latest_weeklies()
+monthly_lists_latest = vq.query_latest_monthlies()
 
-avail_weeks = vq.get_avail_weeks()
+avail_weeks  = vq.get_avail_weeks()
 avail_months = vq.get_avail_months()
 
 # Viz Params
@@ -50,7 +50,7 @@ if "tab_state" not in st.session_state:
 with tab_1:
     st.title("Overview")
     st.write("This dashboard shows the current and historical NYT Bestseller Lists.")
-    st.write("Click on the \"Weekly Lists\" or \"Monthly Lists\" tab to see the current lists.")
+    st.write("Click on the \"Weekly Lists\" or \"Monthly Lists\" tab to see the lists by category and update frequency.")
     st.write("Once in a tab view, use the date filters to look up past lists and rankings.")
 
 # %% Weeklies Tab
@@ -124,7 +124,7 @@ with tab_2:
                         else:
                             # Render image if it exists
                             if r_image:
-                                st.image(r_image, width=200)
+                                st.image(r_image, width=175)
                             else:
                                 st.caption("No image available")
                             
@@ -213,7 +213,7 @@ with tab_3:
                         else:
                             # Render image if it exists
                             if r_image:
-                                st.image(r_image, width=200)
+                                st.image(r_image, width=175)
                             else:
                                 st.caption("No image available")
                             
