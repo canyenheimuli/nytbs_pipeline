@@ -43,7 +43,7 @@ if "tab_state" not in st.session_state:
             "active_period": None,
             "filtered_df": None,
         }
-        for tab in [tab_2, tab_3]
+        for tab in ["tab_2", "tab_3"]
     }
 
 # %% Overview Tab
