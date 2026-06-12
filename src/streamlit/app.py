@@ -151,7 +151,7 @@ with tab_3:
     with col_m:
         selected_month = st.selectbox("Select Month", months, index=datetime.now().month - 1)
     
-    with col2:
+    with col_y:
         selected_year = st.selectbox("Select Year", years, index=years.index(current_year))
     
     selected_month_number = months.index(selected_month) + 1
