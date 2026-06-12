@@ -176,7 +176,7 @@ with tab_3:
     # Get Data Based on State
     if state["view_mode"] == "latest":
         st.subheader(f"Latest data — month of {avail_months[0]}")
-        curr_data = weekly_lists_latest
+        curr_data = monthly_lists_latest
     else:
         st.subheader(f"Filtered data — month of {selected_month} {selected_year}")
         curr_data = state["filtered_df"]
