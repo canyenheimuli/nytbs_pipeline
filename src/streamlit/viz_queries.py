@@ -172,7 +172,7 @@ def query_filtered_weeklies(date: date) -> pd.DataFrame:
             FROM books AS b
             LEFT JOIN weekly_lists AS w ON b.isbn13 = w.isbn13
             LEFT JOIN list_info AS l ON w.list_id = l.list_id
-            WHERE w.retrieval_date = :date
+            WHERE w.list_date = :date
             ORDER BY l.list_name, rank;
         """)
         df = conn.execute(query, {"date": date}).fetchall()
@@ -214,7 +214,7 @@ def query_latest_monthlies() -> pd.DataFrame:
     return pd.DataFrame(df)
 
 # Filtered Monthlies Fn.
-def query_filtered_monthlies(date: date) -> pd.DataFrame:
+def query_filtered_monthlies(month: int, year: int) -> pd.DataFrame:
     '''
     Queries DB for all monthly lists
     for bechmarked (from user-supplied) month
@@ -237,10 +237,11 @@ def query_filtered_monthlies(date: date) -> pd.DataFrame:
                 ON b.isbn13 = m.isbn13
             LEFT JOIN list_info AS l
                 ON m.list_id = l.list_id
-            WHERE m.retrieval_date = :date
+            WHERE m.list_date_month = :month
+                AND m.list_date_year = :year
             ORDER BY l.list_name, rank;
         """)
-        df = conn.execute(query, {"date": date}).fetchall()
+        df = conn.execute(query, {"month": month, "year": year}).fetchall()
     
     # Output
     return pd.DataFrame(df)
