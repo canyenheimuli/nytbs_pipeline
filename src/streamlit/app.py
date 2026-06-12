@@ -125,46 +125,53 @@ with tab_2:
         st.subheader(f"Filtered data — week of {state['active_period']}")
         curr_data = state["filtered_df"]
 
-    curr_data_split = app_utils.process_list_df(curr_data, "weekly")
+    # Error caption if data is empty
+    if curr_data.empty:
+        st.caption("No data available for this time period")
 
-    # Loop through weekly lists in df vector
-    for weekly_list in curr_data_split:
+    # Show data if exists
+    else:
+        # Split data by group for viz
+        curr_data_split = app_utils.process_list_df(curr_data, "weekly")
     
-        # Containerize (card widget-ize) each list
-        with st.container():
-            # List title
-            list_name = weekly_list["list_name"].values[0]
-            st.header(list_name)
-            
-            # Break up list into chunks with length 5
-            for i in range(0, len(weekly_list), cols_per_row):
-                # Subset data for viz row
-                weeklies_row = weekly_list[i:i + cols_per_row]
+        # Loop through weekly lists in df vector
+        for weekly_list in curr_data_split:
+        
+            # Containerize (card widget-ize) each list
+            with st.container():
+                # List title
+                list_name = weekly_list["list_name"].values[0]
+                st.header(list_name)
                 
-                # Create the row layout dynamically
-                r_cols = st.columns(cols_per_row)
-                
-                # Loop parallel over inputs into st_cols
-                for r_rank, r_title, r_author, r_image, r_col in zip(weeklies_row['rank'], weeklies_row['title'], weeklies_row['author'], weeklies_row['image'], r_cols):
-                    with r_col:
-                        # Check for essential data
-                        if r_title == "" and r_author == "" and r_image == "":
-                            # Control flow for empty ranking data
-                            st.caption("Rank empty")
-                        else:
-                            # Render image if it exists
-                            if r_image:
-                                st.image(r_image, width=175)
+                # Break up list into chunks with length 5
+                for i in range(0, len(weekly_list), cols_per_row):
+                    # Subset data for viz row
+                    weeklies_row = weekly_list[i:i + cols_per_row]
+                    
+                    # Create the row layout dynamically
+                    r_cols = st.columns(cols_per_row)
+                    
+                    # Loop parallel over inputs into st_cols
+                    for r_rank, r_title, r_author, r_image, r_col in zip(weeklies_row['rank'], weeklies_row['title'], weeklies_row['author'], weeklies_row['image'], r_cols):
+                        with r_col:
+                            # Check for essential data
+                            if r_title == "" and r_author == "" and r_image == "":
+                                # Control flow for empty ranking data
+                                st.caption("Rank empty")
                             else:
-                                st.caption("No image available")
-                            
-                            # Fallbacks for individual text elements
-                            disp_rank   = r_rank if r_rank != "" else "N/A"
-                            disp_title  = r_title if r_title != "" else "Unknown Title"
-                            disp_author = r_author if r_author != "" else "Unknown Author"
-    
-                            # Book info
-                            st.markdown(f"\\#{disp_rank}: {disp_title} by {disp_author}")
+                                # Render image if it exists
+                                if r_image:
+                                    st.image(r_image, width=175)
+                                else:
+                                    st.caption("No image available")
+                                
+                                # Fallbacks for individual text elements
+                                disp_rank   = r_rank if r_rank != "" else "N/A"
+                                disp_title  = r_title if r_title != "" else "Unknown Title"
+                                disp_author = r_author if r_author != "" else "Unknown Author"
+        
+                                # Book info
+                                st.markdown(f"\\#{disp_rank}: {disp_title} by {disp_author}")
                         
 # %% Monthlies Tab
 with tab_3:
@@ -211,46 +218,53 @@ with tab_3:
         st.subheader(f"Filtered data — month of {selected_month} {selected_year}")
         curr_data = state["filtered_df"]
 
-    curr_data_split = app_utils.process_list_df(curr_data, "monthly")
-    
-    # Tab Title
-    st.title("Monthly Lists")
-    
-    # Loop through weekly lists in df vector
-    for monthly_list in curr_data_split:
+    # Error caption if data is empty
+    if curr_data.empty:
+        st.caption("No data available for this time period")
 
-        # Containerize (card widget-ize) each list
-        with st.container():
-            # List Title
-            list_name = monthly_list["list_name"].values[0]
-            st.header(list_name)
+    # Show data if exists
+    else:
+        # Split data by group for viz
+        curr_data_split = app_utils.process_list_df(curr_data, "monthly")
         
-            # Break up list into chunks with length 5
-            for i in range(0, len(monthly_list), cols_per_row):
-                # Subset data for viz row
-                monthlies_row = monthly_list[i:i + cols_per_row]
-                
-                # Create the row layout dynamically
-                r_cols = st.columns(cols_per_row)
-                
-                # Loop parallel over inputs into st_cols
-                for r_rank, r_title, r_author, r_image, r_col in zip(monthlies_row['rank'], monthlies_row['title'], monthlies_row['author'], monthlies_row['image'], r_cols):
-                    with r_col:
-                        # Check for essential data
-                        if r_title == "" and r_author == "" and r_image == "":
-                            # Control flow for empty ranking data
-                            st.caption("Rank empty")
-                        else:
-                            # Render image if it exists
-                            if r_image:
-                                st.image(r_image, width=175)
-                            else:
-                                st.caption("No image available")
-                            
-                            # Fallbacks for individual text elements
-                            disp_rank   = r_rank if r_rank != "" else "N/A"
-                            disp_title  = r_title if r_title != "" else "Unknown Title"
-                            disp_author = r_author if r_author != "" else "Unknown Author"
+        # Tab Title
+        st.title("Monthly Lists")
+        
+        # Loop through weekly lists in df vector
+        for monthly_list in curr_data_split:
     
-                            # Book info
-                            st.markdown(f"\\#{disp_rank}: {disp_title} by {disp_author}")
+            # Containerize (card widget-ize) each list
+            with st.container():
+                # List Title
+                list_name = monthly_list["list_name"].values[0]
+                st.header(list_name)
+            
+                # Break up list into chunks with length 5
+                for i in range(0, len(monthly_list), cols_per_row):
+                    # Subset data for viz row
+                    monthlies_row = monthly_list[i:i + cols_per_row]
+                    
+                    # Create the row layout dynamically
+                    r_cols = st.columns(cols_per_row)
+                    
+                    # Loop parallel over inputs into st_cols
+                    for r_rank, r_title, r_author, r_image, r_col in zip(monthlies_row['rank'], monthlies_row['title'], monthlies_row['author'], monthlies_row['image'], r_cols):
+                        with r_col:
+                            # Check for essential data
+                            if r_title == "" and r_author == "" and r_image == "":
+                                # Control flow for empty ranking data
+                                st.caption("Rank empty")
+                            else:
+                                # Render image if it exists
+                                if r_image:
+                                    st.image(r_image, width=175)
+                                else:
+                                    st.caption("No image available")
+                                
+                                # Fallbacks for individual text elements
+                                disp_rank   = r_rank if r_rank != "" else "N/A"
+                                disp_title  = r_title if r_title != "" else "Unknown Title"
+                                disp_author = r_author if r_author != "" else "Unknown Author"
+        
+                                # Book info
+                                st.markdown(f"\\#{disp_rank}: {disp_title} by {disp_author}")
