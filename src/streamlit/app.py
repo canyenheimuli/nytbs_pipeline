@@ -14,7 +14,7 @@ avail_weeks = vq.get_avail_weeks()
 avail_months = vq.get_avail_months()
 
 # Viz Params
-current_year = datetime.datetime.now().year
+current_year = datetime.now().year
 years = list(range(2008, datetime.now().year + 1))
 months = [
     "January", "February", "March", "April", "May", "June", 
