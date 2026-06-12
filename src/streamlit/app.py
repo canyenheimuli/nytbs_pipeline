@@ -155,7 +155,6 @@ with tab_3:
         selected_year = st.selectbox("Select Year", years, index=years.index(current_year))
     
     selected_month_number = months.index(selected_month) + 1
-    selected_date = datetime(selected_year, selected_month_number, 1)
     st.caption(f"Selected month: **{selected_month} {selected_year}**")
 
     # Filter Buttons
@@ -167,7 +166,7 @@ with tab_3:
     if apply:
         state["view_mode"]      = "filtered"
         state["active_period"]  = selected_date
-        state["filtered_df"]    = vq.query_filtered_monthlies(selected_date)
+        state["filtered_df"]    = vq.query_filtered_monthlies(selected_month_number, selected_year)
 
     if reset:
         state["view_mode"]      = "latest"
