@@ -123,6 +123,7 @@ def query_latest_weeklies() -> pd.DataFrame:
     with engine.connect() as conn:
         query = text("""
             SELECT 
+                w.list_date,
                 w.list_id AS list_id,
                 l.list_name AS list_name,
                 w.book_rank AS rank,
@@ -153,6 +154,7 @@ def query_hist_weeklies() -> pd.DataFrame:
     with engine.connect() as conn:
         query = text("""
             SELECT 
+                w.list_date,
                 w.list_id AS list_id,
                 l.list_name AS list_name,
                 w.book_rank AS rank,
@@ -183,6 +185,8 @@ def query_latest_monthlies() -> pd.DataFrame:
     with engine.connect() as conn:
         query = text("""
             SELECT 
+                m.list_date_year,
+                m.list_date_month,
                 m.list_id AS list_id,
                 l.list_name AS list_name,
                 m.book_rank AS rank,
@@ -214,6 +218,8 @@ def query_hist_monthlies() -> pd.DataFrame:
     with engine.connect() as conn:
         query = text("""
             SELECT 
+                m.list_date_year,
+                m.list_date_month,
                 m.list_id AS list_id,
                 l.list_name AS list_name,
                 m.book_rank AS rank,
