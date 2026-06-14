@@ -118,7 +118,7 @@ with tab_2:
         state["active_week"] = nearest_week
         state["filtered_df"] = weekly_lists_hist.loc[lambda x: x['list_date'] == nearest_week]
 
-    if reset:
+    if reset or (apply and nearest_week == app_utils.find_nearest_week(date.today(), avail_weeks)):
         state["view_mode"]   = "latest"
         state["active_week"] = None
         state["filtered_df"] = None
@@ -212,7 +212,7 @@ with tab_3:
         state["active_month"] = selected_month
         state["filtered_df"]  = monthly_lists_hist.loc[lambda x: (x['list_date_year'] == selected_year) & (x['list_date_month'] == selected_month_number)]
 
-    if reset:
+    if reset or (apply and selected_year == current_year and selected_month == current_month):
         state["view_mode"]    = "latest"
         state["active_year"]  = None
         state["active_month"] = None
