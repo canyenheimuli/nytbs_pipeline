@@ -6,12 +6,15 @@ from datetime import date, datetime
 import pandas as pd
 
 # %% Back-end data, other objects
-# Cached Data Queries
-weekly_lists_latest  = vq.query_latest_weeklies()
-monthly_lists_latest = vq.query_latest_monthlies()
-
-avail_weeks  = vq.get_avail_weeks()
-avail_months = vq.get_avail_months()
+# Spinner to stave off madness
+with st.spinner("Fetching NYT Bestseller Lists data ⏳"):
+    # Cached data
+    weekly_lists_latest  = vq.query_latest_weeklies()
+    weekly_lists_hist    = vq.query_hist_weeklies()
+    avail_weeks          = vq.get_avail_weeks()
+    monthly_lists_latest = vq.query_latest_monthlies()
+    monthly_lists_hist   = vq.query_hist_monthlies()
+    avail_months         = vq.get_avail_months()
 
 # Viz Params
 years = list(range(2008, datetime.now().year + 1))
@@ -99,7 +102,8 @@ with tab_2:
         key="tab_2_date_input"
     )
 
-    nearest_week = vq.find_nearest_week(selected_date, avail_weeks)
+    nearest_week = app_utils.find_nearest_week(selected_date, avail_weeks)
+    st.caption(f"Selected date: **{selected_date}**")
     st.caption(f"Nearest available week: **{nearest_week}**")
 
     col1, col2 = st.columns(2)
@@ -110,7 +114,7 @@ with tab_2:
     if apply:
         state["view_mode"]      = "filtered"
         state["active_period"]  = nearest_week
-        state["filtered_df"]    = vq.query_filtered_weeklies(nearest_week)
+        state["filtered_df"]    = weekly_lists_hist.loc[lambda x: x['list_date'] == nearest_week]
 
     if reset:
         state["view_mode"]      = "latest"
@@ -191,9 +195,9 @@ with tab_3:
     with col_y:
         selected_year = st.selectbox("Select Year", years, index=years.index(current_year))
     
-    selected_month_number = months.index(selected_month) + 1
+    selected_month_number = months.index(selected_month) + 1    
     st.caption(f"Selected month: **{selected_month} {selected_year}**")
-
+    
     # Filter Buttons
     col_filter, col_reset = st.columns(2)
     apply = col_filter.button("Apply filter", key="tab_3_apply")
@@ -203,7 +207,7 @@ with tab_3:
     if apply:
         state["view_mode"]      = "filtered"
         state["active_period"]  = selected_date
-        state["filtered_df"]    = vq.query_filtered_monthlies(selected_month_number, selected_year)
+        state["filtered_df"]    = monthly_lists_hist.loc[lambda x: (x['list_date_year'] == selected_year) & (x['list_date_month'] == selected_month_number)]
 
     if reset:
         state["view_mode"]      = "latest"
