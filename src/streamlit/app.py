@@ -44,7 +44,9 @@ if "tab_state" not in st.session_state:
     st.session_state.tab_state = {
         tab: {
             "view_mode": "latest",
-            "active_period": None,
+            "active_year": None,
+            "active_month": None,
+            "active_week": None,
             "filtered_df": None,
         }
         for tab in ["tab_2", "tab_3"]
@@ -112,21 +114,21 @@ with tab_2:
 
     # Button logic
     if apply:
-        state["view_mode"]      = "filtered"
-        state["active_period"]  = nearest_week
-        state["filtered_df"]    = weekly_lists_hist.loc[lambda x: x['list_date'] == nearest_week]
+        state["view_mode"]   = "filtered"
+        state["active_week"] = nearest_week
+        state["filtered_df"] = weekly_lists_hist.loc[lambda x: x['list_date'] == nearest_week]
 
     if reset:
-        state["view_mode"]      = "latest"
-        state["active_period"]  = None
-        state["filtered_df"]    = None
+        state["view_mode"]   = "latest"
+        state["active_week"] = None
+        state["filtered_df"] = None
 
     # Get Data Based on State
     if state["view_mode"] == "latest":
         st.subheader(f"Latest data — week of {avail_weeks[0]}")
         curr_data = weekly_lists_latest
     else:
-        st.subheader(f"Filtered data — week of {state['active_period']}")
+        st.subheader(f"Filtered data — week of {state['active_week']}")
         curr_data = state["filtered_df"]
 
     # Error caption if data is empty
@@ -205,21 +207,23 @@ with tab_3:
 
     # Button logic
     if apply:
-        state["view_mode"]      = "filtered"
-        state["active_period"]  = selected_date
-        state["filtered_df"]    = monthly_lists_hist.loc[lambda x: (x['list_date_year'] == selected_year) & (x['list_date_month'] == selected_month_number)]
+        state["view_mode"]    = "filtered"
+        state["active_year"]  = selected_year
+        state["active_month"] = selected_month
+        state["filtered_df"]  = monthly_lists_hist.loc[lambda x: (x['list_date_year'] == selected_year) & (x['list_date_month'] == selected_month_number)]
 
     if reset:
-        state["view_mode"]      = "latest"
-        state["active_period"]  = None
-        state["filtered_df"]    = None
+        state["view_mode"]    = "latest"
+        state["active_year"]  = None
+        state["active_month"] = None
+        state["filtered_df"]  = None
 
     # Get Data Based on State
     if state["view_mode"] == "latest":
         st.subheader(f"Latest data — month of {current_month} {current_year}")
         curr_data = monthly_lists_latest
     else:
-        st.subheader(f"Filtered data — month of {selected_month} {selected_year}")
+        st.subheader(f"Filtered data — month of {state["active_month"]} {state["active_year"]}")
         curr_data = state["filtered_df"]
 
     # Error caption if data is empty
