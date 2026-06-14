@@ -15,8 +15,8 @@ import pandas as pd
 @st.cache_resource
 def viz_engine() -> Engine:
     """
-    Creates and returns a SQLAlchemy engine connected to the Azure SQL
-    database via a Fixie SOCKS proxy, using pytds as the backend driver.
+    Creates and returns an SQLAlchemy engine connected to the 
+    Azure SQL database w/a Fixie SOCKS proxy, pytds driver
     """
     # Proxy (Fixie)
     fixie_url = st.secrets["FIXIE_URL"]
@@ -85,15 +85,6 @@ def get_avail_weeks() -> list[date]:
 
     # Output (list of dates)
     return [r[0] for r in rows]
-
-# Find nearest week in available DB weeks to user-supplied date
-def find_nearest_week(selected_date: date, available_weeks: list[date]) -> date:
-    '''
-    Takes a user-supplied date and benchmarks 
-    it to an existing week of pre-prepared available weeks
-    '''
-    past_weeks = [w for w in available_weeks if w <= selected_date]
-    return max(past_weeks) if past_weeks else None
     
 # Get avail months in db for month filter
 @st.cache_data(ttl=timedelta(days=30))
@@ -123,8 +114,7 @@ def get_avail_months() -> list[date]:
 @st.cache_data(ttl=timedelta(days=7))
 def query_latest_weeklies() -> pd.DataFrame:
     '''
-    Queries DB for latest weekly lists
-    (function separated for cache-ing)
+    Queries DB and caches data for latest weekly lists
     '''
     # Create engine
     engine = viz_engine()
@@ -142,7 +132,7 @@ def query_latest_weeklies() -> pd.DataFrame:
             FROM books AS b
             LEFT JOIN weekly_lists AS w ON b.isbn13 = w.isbn13
             LEFT JOIN list_info AS l ON w.list_id = l.list_id
-            WHERE w.retrieval_date = (SELECT MAX(retrieval_date) FROM weekly_lists)
+            WHERE w.list_date = (SELECT MAX(list_date) FROM weekly_lists)
             ORDER BY l.list_name, rank;
         """)
         df = conn.execute(query).fetchall()
@@ -150,11 +140,11 @@ def query_latest_weeklies() -> pd.DataFrame:
     # Output
     return pd.DataFrame(df)
 
-# Filtered Weeklies Fn.
-def query_filtered_weeklies(date: date) -> pd.DataFrame:
+# Historical Weeklies Fn.
+@st.cache_data(ttl=timedelta(days=7))
+def query_hist_weeklies() -> pd.DataFrame:
     '''
-    Queries DB for all weekly lists
-    for bechmarked (from user-supplied) date
+    Queries DB and caches data for historical weekly lists
     '''
     # Create engine
     engine = viz_engine()
@@ -172,10 +162,10 @@ def query_filtered_weeklies(date: date) -> pd.DataFrame:
             FROM books AS b
             LEFT JOIN weekly_lists AS w ON b.isbn13 = w.isbn13
             LEFT JOIN list_info AS l ON w.list_id = l.list_id
-            WHERE w.list_date = :date
+            WHERE w.list_date != (SELECT MAX(list_date) FROM weekly_lists)
             ORDER BY l.list_name, rank;
         """)
-        df = conn.execute(query, {"date": date}).fetchall()
+        df = conn.execute(query).fetchall()
     
     # Output
     return pd.DataFrame(df)
@@ -184,8 +174,7 @@ def query_filtered_weeklies(date: date) -> pd.DataFrame:
 @st.cache_data(ttl=timedelta(days=30))
 def query_latest_monthlies() -> pd.DataFrame:
     '''
-    Queries DB for latest monthly lists
-    (function separated for cache-ing)
+    Queries DB and caches data for latest monthly lists
     '''
     # Create engine
     engine = viz_engine()
@@ -201,11 +190,10 @@ def query_latest_monthlies() -> pd.DataFrame:
                 b.author AS author,
                 b.book_image AS image
             FROM books AS b
-            LEFT JOIN monthly_lists AS m
-                ON b.isbn13 = m.isbn13
-            LEFT JOIN list_info AS l
-                ON m.list_id = l.list_id
-            WHERE m.retrieval_date = (SELECT MAX(retrieval_date) FROM monthly_lists)
+            LEFT JOIN monthly_lists AS m ON b.isbn13 = m.isbn13
+            LEFT JOIN list_info AS l ON m.list_id = l.list_id
+            WHERE m.list_date_year = (SELECT MAX(list_date_year) FROM monthly_lists)
+                AND m.list_date_month = (SELECT MAX(list_date_month) FROM monthly_lists WHERE list_date_year = (SELECT MAX(list_date_year) FROM monthly_lists))
             ORDER BY l.list_name, rank;
         """)
         df = conn.execute(query).fetchall()
@@ -213,11 +201,11 @@ def query_latest_monthlies() -> pd.DataFrame:
     # Output
     return pd.DataFrame(df)
 
-# Filtered Monthlies Fn.
-def query_filtered_monthlies(month: int, year: int) -> pd.DataFrame:
+# Historical Monthlies Fn.
+@st.cache_data(ttl=timedelta(days=30))
+def query_hist_monthlies() -> pd.DataFrame:
     '''
-    Queries DB for all monthly lists
-    for bechmarked (from user-supplied) month
+    Queries DB and caches data for historical monthly lists
     '''
     # Create engine
     engine = viz_engine()
@@ -233,15 +221,14 @@ def query_filtered_monthlies(month: int, year: int) -> pd.DataFrame:
                 b.author AS author,
                 b.book_image AS image
             FROM books AS b
-            LEFT JOIN monthly_lists AS m
-                ON b.isbn13 = m.isbn13
-            LEFT JOIN list_info AS l
-                ON m.list_id = l.list_id
-            WHERE m.list_date_month = :month
-                AND m.list_date_year = :year
+            LEFT JOIN monthly_lists AS m ON b.isbn13 = m.isbn13
+            LEFT JOIN list_info AS l ON m.list_id = l.list_id
+            WHERE (m.list_date_year * 100 + m.list_date_month) < (
+                SELECT MAX(list_date_year * 100 + list_date_month) FROM monthly_lists
+            )
             ORDER BY l.list_name, rank;
         """)
-        df = conn.execute(query, {"month": month, "year": year}).fetchall()
+        df = conn.execute(query).fetchall()
     
     # Output
     return pd.DataFrame(df)

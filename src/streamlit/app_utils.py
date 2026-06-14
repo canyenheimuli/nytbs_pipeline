@@ -1,5 +1,15 @@
 # Packages
+from datetime import date
 import pandas as pd
+
+# Benchmark user-supplied date to nearest DB week
+def find_nearest_week(selected_date: date, available_weeks: list[date]) -> date:
+    '''
+    Takes a user-supplied date and benchmarks 
+    it to an existing week of pre-prepared available weeks
+    '''
+    past_weeks = [w for w in available_weeks if w <= selected_date]
+    return max(past_weeks) if past_weeks else None
 
 # Re-order and Split Queried List Data fn.
 def process_list_df(lists_df: pd.DataFrame, lists_freq: str) -> list[pd.DataFrame]:
