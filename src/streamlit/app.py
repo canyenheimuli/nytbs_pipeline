@@ -55,11 +55,13 @@ if "tab_state" not in st.session_state:
 # %% Overview Tab
 with tab_1:
     st.title("Overview")
-    st.markdown("""
+    st.markdown(f"""
     The NYT Bestseller Lists Historical Viewer allows you to view both the current NYT Bestsellers book lists and the lists of the past.
 
     To use the historical viewer, click one of the list tabs at the top of this page. Input a date in the "Select a date" input boxes, then press \
     "Apply filter" to view the lists for that date. To remove a selected filter and view the latest lists, push the "Reset to latest" button.
+
+    Currently, the viewer app can show list data ranging from {avail_weeks[-1].strftime("%B %d, %Y")} to {avail_weeks[0].strftime("%B %d, %Y")} -- the most recent list.
 
     ## Background
     The NYT Bestseller Lists are rankings of the most popular books in the United States ordered by recent sales. The lists are prepared using the \
@@ -101,10 +103,13 @@ with tab_2:
     selected_date = st.date_input(
         "Filter by date",
         value=date.today(),
+        min_value=avail_weeks[-1],
+        max_value=date.today(),
         key="tab_2_date_input"
     )
 
     nearest_week = app_utils.find_nearest_week(selected_date, avail_weeks)
+    st.caption(f"Available date range: **{avail_weeks[-1].strftime("%B %d, %Y")} to {date.today()}**")
     st.caption(f"Selected date: **{selected_date}**")
     st.caption(f"Nearest available week: **{nearest_week}**")
 
@@ -197,7 +202,8 @@ with tab_3:
     with col_y:
         selected_year = st.selectbox("Select Year", years, index=years.index(current_year))
     
-    selected_month_number = months.index(selected_month) + 1    
+    selected_month_number = months.index(selected_month) + 1
+    st.caption(f"Available date range: **{avail_weeks[-1].strftime("%B, %Y")} to {datetime.now().strftime("%B, %Y")}**")
     st.caption(f"Selected month: **{selected_month} {selected_year}**")
     
     # Filter Buttons
