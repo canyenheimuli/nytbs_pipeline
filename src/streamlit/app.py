@@ -222,7 +222,7 @@ with tab_3:
 
     # Get Data Based on State
     if state["view_mode"] == "latest":
-        st.subheader(f"Latest data — month of {date.today().strftime("%B %d, %Y")}")
+        st.subheader(f"Latest data — month of {date.today().strftime("%B, %Y")}")
         curr_data = monthly_lists_latest
     else:
         st.subheader(f"Filtered data — month of {state['active_period'].strftime("%B, %Y")}")
