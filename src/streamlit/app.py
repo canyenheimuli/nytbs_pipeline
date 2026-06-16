@@ -44,9 +44,7 @@ if "tab_state" not in st.session_state:
     st.session_state.tab_state = {
         tab: {
             "view_mode": "latest",
-            "active_year": None,
-            "active_month": None,
-            "active_week": None,
+            "active_period": None,
             "filtered_df": None,
         }
         for tab in ["tab_2", "tab_3"]
@@ -61,7 +59,7 @@ with tab_1:
     To use the historical viewer, click one of the list tabs at the top of this page. Input a date in the "Select a date" input boxes, then press \
     "Apply filter" to view the lists for that date. To remove a selected filter and view the latest lists, push the "Reset to latest" button.
 
-    Currently, the viewer app can show list data ranging from {avail_weeks[-1].strftime("%B %d, %Y")} to {avail_weeks[0].strftime("%B %d, %Y")} -- the most recent list.
+    Currently, the viewer app can show list data ranging from **{avail_weeks[-1].strftime("%B %d, %Y")}** to **{avail_weeks[0].strftime("%B %d, %Y")}** -- the most recent list.
 
     ## Background
     The NYT Bestseller Lists are rankings of the most popular books in the United States ordered by recent sales. The lists are prepared using the \
@@ -110,8 +108,8 @@ with tab_2:
 
     nearest_week = app_utils.find_nearest_week(selected_date, avail_weeks)
     st.caption(f"Available date range: **{avail_weeks[-1].strftime("%B %d, %Y")} to {date.today().strftime("%B %d, %Y")}**")
-    st.caption(f"Selected date: **{selected_date}**")
-    st.caption(f"Nearest available week: **{nearest_week}**")
+    st.caption(f"Selected date: **{selected_date.strftime("%B %d, %Y")}**")
+    st.caption(f"Nearest available week: **{nearest_week.strftime("%B %d, %Y")}**")
 
     col1, col2 = st.columns(2)
     apply = col1.button("Apply filter", key="tab_2_apply")
@@ -119,21 +117,21 @@ with tab_2:
 
     # Button logic
     if apply:
-        state["view_mode"]   = "filtered"
-        state["active_week"] = nearest_week
-        state["filtered_df"] = weekly_lists_hist.loc[lambda x: x['list_date'] == nearest_week]
+        state["view_mode"]     = "filtered"
+        state["active_period"] = nearest_week
+        state["filtered_df"]   = weekly_lists_hist.loc[lambda x: x['list_date'] == nearest_week]
 
     if reset or (apply and nearest_week == app_utils.find_nearest_week(date.today(), avail_weeks)):
-        state["view_mode"]   = "latest"
-        state["active_week"] = None
-        state["filtered_df"] = None
+        state["view_mode"]     = "latest"
+        state["active_period"] = None
+        state["filtered_df"]   = None
 
     # Get Data Based on State
     if state["view_mode"] == "latest":
-        st.subheader(f"Latest data — week of {avail_weeks[0]}")
+        st.subheader(f"Latest data — week of {avail_weeks[0].strftime("%B %d, %Y")}")
         curr_data = weekly_lists_latest
     else:
-        st.subheader(f"Filtered data — week of {state['active_week']}")
+        st.subheader(f"Filtered data — week of {state['active_period'].strftime("%B %d, %Y")}")
         curr_data = state["filtered_df"]
 
     # Error caption if data is empty
@@ -213,23 +211,21 @@ with tab_3:
 
     # Button logic
     if apply:
-        state["view_mode"]    = "filtered"
-        state["active_year"]  = selected_year
-        state["active_month"] = selected_month
-        state["filtered_df"]  = monthly_lists_hist.loc[lambda x: (x['list_date_year'] == selected_year) & (x['list_date_month'] == selected_month_number)]
+        state["view_mode"]     = "filtered"
+        state["active_period"] = datetime(selected_year, selected_month_number, 1)
+        state["filtered_df"]   = monthly_lists_hist.loc[lambda x: (x['list_date_year'] == selected_year) & (x['list_date_month'] == selected_month_number)]
 
     if reset or (apply and selected_year == current_year and selected_month == current_month):
-        state["view_mode"]    = "latest"
-        state["active_year"]  = None
-        state["active_month"] = None
-        state["filtered_df"]  = None
+        state["view_mode"]     = "latest"
+        state["active_period"] = None
+        state["filtered_df"]   = None
 
     # Get Data Based on State
     if state["view_mode"] == "latest":
-        st.subheader(f"Latest data — month of {current_month} {current_year}")
+        st.subheader(f"Latest data — month of {active_period.strftime("%B, %Y")}")
         curr_data = monthly_lists_latest
     else:
-        st.subheader(f"Filtered data — month of {state["active_month"]} {state["active_year"]}")
+        st.subheader(f"Filtered data — month of {date.today().strftime("%B %d, %Y")}")
         curr_data = state["filtered_df"]
 
     # Error caption if data is empty
