@@ -109,7 +109,7 @@ with tab_2:
     )
 
     nearest_week = app_utils.find_nearest_week(selected_date, avail_weeks)
-    st.caption(f"Available date range: **{avail_weeks[-1].strftime("%B %d, %Y")} to {date.today()}**")
+    st.caption(f"Available date range: **{avail_weeks[-1].strftime("%B %d, %Y")} to {date.today().strftime("%B %d, %Y")}**")
     st.caption(f"Selected date: **{selected_date}**")
     st.caption(f"Nearest available week: **{nearest_week}**")
 
