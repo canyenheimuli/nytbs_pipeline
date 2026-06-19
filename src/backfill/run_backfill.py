@@ -1,17 +1,18 @@
 ## Setup
 # Packages
+import os
 from dotenv import load_dotenv
 import json
 import logging
 import time
-import argparse
-from datetime import date
+from sqlalchemy import text
+from datetime import date, timedelta
 from pathlib import Path
 import pandas as pd
 
 from src.etl.extract import extract
 from src.etl.transform import transform
-from src.etl.load import get_azuresqldb_engine‎, load
+from src.etl.load import get_azuresqldb_engine, load
 
 # Env things for engine creation
 load_dotenv()
@@ -37,55 +38,58 @@ SECONDS_PER_CALL     = 15
 ## Helper fns.
 # Get date range fn.
 def get_backfill_dates(start_date: str = None, end_date: str = None) -> list[str]:
-  '''
-  Generate all Sundays between two dates (inclusive);
-  default end is the earliest date in the API ("2008-06-15")
-  start determined by a checkpoint tracker fn
-  '''
-  # Get start date using query to database if kept at None
-  if start_date is None:
-    # Make engine
-    engine = get_azuresqldb_engine()
-  
-    # Connect, get start
-    with engine.connect() as conn:
-      query = text("SELECT MIN(list_date) FROM weekly_lists")
-      min_list_date = conn.execute(query).scalar()
-      start_date = (min_list_date + timedelta(days=11)).strftime("%Y-%m-%d")
-
-  # Set end date if end date is None
-  end_date = "2008-06-15" if end_date is None else end_date
-  
-  # Get date range
-  pub_dates = pd.date_range(
-      start=start_date,
-      end=end_date,
-      freq=-1 * pd.offsets.Week(weekday=6) # Each Sunday from start to end going backward
-  )
-  
-  # Output
-  return [d.strftime('%Y-%m-%d') for d in pub_dates]
+    '''
+    Generate all Sundays between two dates (inclusive);
+    default end is the earliest date in the API ("2008-06-15")
+    start determined by a checkpoint tracker fn
+    '''
+    # Get start date using query to database if kept at None
+    if start_date is None:
+        # Make engine
+        engine = get_azuresqldb_engine()
+      
+        # Connect, get start
+        with engine.connect() as conn:
+            query = text("SELECT MIN(list_date) FROM weekly_lists")
+            min_list_date = conn.execute(query).scalar()
+            # Convert MIN(list_date) back to its published_date (+11),
+            # then step one week back (-7) to get the next unpublished Sunday;
+            # final timedelta: 4 days in the future
+            start_date = (min_list_date + timedelta(days=4)).strftime("%Y-%m-%d")
+    
+    # Set end date if end date is None
+    end_date = "2008-06-15" if end_date is None else end_date
+    
+    # Get date range
+    pub_dates = pd.date_range(
+        start=start_date,
+        end=end_date,
+        freq=-1 * pd.offsets.Week(weekday=6) # Each Sunday from start to end going backward
+    )
+    
+    # Output
+    return [d.strftime('%Y-%m-%d') for d in pub_dates]
 
 # Load Checkpoint fn.
 def load_checkpoint() -> set[str]:
-  '''
-  Loads checkpoint if exists
-  '''
-  if CHECKPOINT_FILE.exists():
-    data = json.loads(CHECKPOINT_FILE.read_text())
-    log.info(f"Checkpoint loaded: {len(data['completed'])} completed, "
-             f"{len(data.get('failures', {}))} prior failures")
-    return set(data["completed"]), data.get("failures", {})
-  
-  return set(), {}
+    '''
+    Loads checkpoint if exists
+    '''
+    if CHECKPOINT_FILE.exists():
+        data = json.loads(CHECKPOINT_FILE.read_text())
+        log.info(f"Checkpoint loaded: {len(data['completed'])} completed, "
+                 f"{len(data.get('failures', {}))} prior failures")
+        return set(data["completed"]), data.get("failures", {})
+    
+    return set(), {}
 
 def save_checkpoint(completed: set[str], failures: dict):
-  '''
-  Writes completes, failuers to checkpoint file
-  '''
-  CHECKPOINT_FILE.write_text(
-    json.dumps({"completed": sorted(completed), "failures": failures}, indent=2)
-  )
+    '''
+    Writes completes, failuers to checkpoint file
+    '''
+    CHECKPOINT_FILE.write_text(
+      json.dumps({"completed": sorted(completed), "failures": failures}, indent=2)
+    )
 
 # Run pipeline for date fn.
 def run_pipeline_for_date(target_date: date, db_retries: int = 3) -> None:
@@ -153,12 +157,13 @@ def run_backfill(
                 success = True
                 break
             except Exception as e:
+                last_error = e  # copy reference out before it goes out of scope
                 log.warning(f"✗ {d} pipeline attempt {attempt}/{max_retries}: {e}")
                 if attempt < max_retries:
                     time.sleep(2 ** attempt)
 
         if not success:
-            failures[d.isoformat()] = str(e)
+            failures[d.isoformat()] = str(last_error)
             save_checkpoint(completed, failures)
             log.error(f"PERMANENT FAILURE: {d} — logged to {FAILURES_FILE}")
 
@@ -171,5 +176,7 @@ def run_backfill(
 
 ## Executor
 if __name__ == "__main__":
-    dates = get_backfill_dates()
+    start_date = os.environ.get("START_DATE") or None
+    end_date = os.environ.get("END_DATE") or None
+    dates = get_backfill_dates(start_date, end_date)
     run_backfill(dates)
