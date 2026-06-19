@@ -69,8 +69,8 @@ def viz_engine() -> Engine:
     )
 
 # Get avail weeks in db for week filter
-@st.cache_data(ttl=timedelta(days=7))
-def get_avail_weeks() -> list[date]:
+@st.cache_data
+def get_avail_weeks(week_cycle_code) -> list[date]:
     '''
     Get (and cache) all unique weeks in
     db to benchmark for week filter
@@ -87,8 +87,8 @@ def get_avail_weeks() -> list[date]:
     return [r[0] for r in rows]
     
 # Get avail months in db for month filter
-@st.cache_data(ttl=timedelta(days=30))
-def get_avail_months() -> list[date]:
+@st.cache_data
+def get_avail_months(month_str) -> list[date]:
     '''
     Get (and cache) all unique months in
     db to benchmark for month filter
@@ -111,8 +111,8 @@ def get_avail_months() -> list[date]:
     return [datetime(r[1], r[0], 1) for r in rows]
 
 # Latest Weeklies Fn.
-@st.cache_data(ttl=timedelta(days=7))
-def query_latest_weeklies() -> pd.DataFrame:
+@st.cache_data
+def query_latest_weeklies(week_cycle_code) -> pd.DataFrame:
     '''
     Queries DB and caches data for latest weekly lists
     '''
@@ -142,8 +142,8 @@ def query_latest_weeklies() -> pd.DataFrame:
     return pd.DataFrame(df)
 
 # Historical Weeklies Fn.
-@st.cache_data(ttl=timedelta(days=7))
-def query_hist_weeklies() -> pd.DataFrame:
+@st.cache_data
+def query_hist_weeklies(week_cycle_code) -> pd.DataFrame:
     '''
     Queries DB and caches data for historical weekly lists
     '''
@@ -173,8 +173,8 @@ def query_hist_weeklies() -> pd.DataFrame:
     return pd.DataFrame(df)
 
 # Latest Monthlies Fn.
-@st.cache_data(ttl=timedelta(days=30))
-def query_latest_monthlies() -> pd.DataFrame:
+@st.cache_data
+def query_latest_monthlies(month_str) -> pd.DataFrame:
     '''
     Queries DB and caches data for latest monthly lists
     '''
@@ -206,8 +206,8 @@ def query_latest_monthlies() -> pd.DataFrame:
     return pd.DataFrame(df)
 
 # Historical Monthlies Fn.
-@st.cache_data(ttl=timedelta(days=30))
-def query_hist_monthlies() -> pd.DataFrame:
+@st.cache_data
+def query_hist_monthlies(month_str) -> pd.DataFrame:
     '''
     Queries DB and caches data for historical monthly lists
     '''
