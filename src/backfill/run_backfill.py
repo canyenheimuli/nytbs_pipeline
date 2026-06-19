@@ -53,7 +53,7 @@ def get_backfill_dates(start_date: str = None, end_date: str = None) -> list[str
       min_list_date = conn.execute(query).scalar()
       start_date = (min_list_date + timedelta(days=11)).strftime("%Y-%m-%d")
 
-  # Set end date if start date is None
+  # Set end date if end date is None
   end_date = "2008-06-15" if end_date is None else end_date
   
   # Get date range
@@ -126,6 +126,7 @@ def run_backfill(
     calls_today = 0
 
     for d in remaining:
+        print(f"========== ATTEMPTING BACKFILL DATE {d} ==========")
         # Daily cap check
         if calls_today >= daily_limit:
             log.warning(
