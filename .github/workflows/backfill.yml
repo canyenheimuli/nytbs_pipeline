@@ -3,9 +3,16 @@ name: Historical Data Backfill
 on:
   workflow_dispatch:
     inputs:
-      dates:
-        description: "List of dates to mapp ETL pipeline"
+      start_date:
+        description: "First date of backfill date range (MUST BE LATER DATE)"
         required: false
+      end_date:
+        description: "End date of backfill date range (MUST BE EARLIER DATE)"
+        required: false
+
+concurrency:
+      group: backfill
+      cancel-in-progress: false
 
 jobs:
   backfill:
@@ -41,6 +48,9 @@ jobs:
         env:
           # Python Path
           PYTHONPATH: ${{ github.workspace }}
+          # Input Dates
+          START_DATE: ${{ inputs.start_date }}
+          END_DATE: ${{ inputs.end_date }}
           # NYT API Key
           NYT_API_KEY: ${{ secrets.NYT_API_KEY }}
           # Azure SQL DB Creds
@@ -49,7 +59,7 @@ jobs:
           AZURE_SQL_USERNAME: ${{ secrets.AZURE_SQL_USERNAME }}
           AZURE_SQL_PASSWORD: ${{ secrets.AZURE_SQL_PASSWORD }}
         run: |
-          python backfill.py
+          python -m src.backfill.run_backfill
 
       # Save checkpoint even if job fails
       - name: Save checkpoint
