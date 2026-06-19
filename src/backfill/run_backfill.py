@@ -92,11 +92,11 @@ def save_checkpoint(completed: set[str], failures: dict):
     )
 
 # Run pipeline for date fn.
-def run_pipeline_for_date(target_date: date, db_retries: int = 3) -> None:
+def run_pipeline_for_date(date: str, db_retries: int = 3) -> None:
     '''
     Runs ETL for a single date
     '''
-    raw  = extract(target_date=target_date)
+    raw  = extract(date=date)
     data = transform(raw)
   
     for attempt in range(1, db_retries + 1):
@@ -104,7 +104,7 @@ def run_pipeline_for_date(target_date: date, db_retries: int = 3) -> None:
             load(data)
             return
         except Exception as e:
-            log.warning(f"  DB attempt {attempt}/{db_retries} failed for {target_date}: {e}")
+            log.warning(f"  DB attempt {attempt}/{db_retries} failed for {date}: {e}")
             if attempt < db_retries:
                 time.sleep(5 * attempt) # backoff time increases linearly
             else:
@@ -150,7 +150,7 @@ def run_backfill(
         for attempt in range(1, max_retries + 1):
             try:
                 run_pipeline_for_date(d)
-                completed.add(d.isoformat())
+                completed.add(d)
                 save_checkpoint(completed, failures)
                 calls_today += 1
                 log.info(f"✓ {d}  (call {calls_today}/{daily_limit} today)")
@@ -163,7 +163,7 @@ def run_backfill(
                     time.sleep(2 ** attempt)
 
         if not success:
-            failures[d.isoformat()] = str(last_error)
+            failures[d] = str(last_error)
             save_checkpoint(completed, failures)
             log.error(f"PERMANENT FAILURE: {d} — logged to {FAILURES_FILE}")
 
