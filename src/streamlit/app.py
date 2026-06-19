@@ -1,20 +1,21 @@
 # %% Packages
 import streamlit as st
-import viz_queries as vq
-import app_utils
 from datetime import date, datetime
 import pandas as pd
 
+import viz_queries as vq
+import app_utils
+
 # %% Back-end data, other objects
-# Spinner to stave off madness
+# Loading message spinner
 with st.spinner("Fetching NYT Bestseller Lists data ⏳"):
     # Cached data
-    weekly_lists_latest  = vq.query_latest_weeklies()
-    weekly_lists_hist    = vq.query_hist_weeklies()
-    avail_weeks          = vq.get_avail_weeks()
-    monthly_lists_latest = vq.query_latest_monthlies()
-    monthly_lists_hist   = vq.query_hist_monthlies()
-    avail_months         = vq.get_avail_months()
+    weekly_lists_latest  = vq.query_latest_weeklies(week_cycle_code = app_utils.get_cycle_code())
+    weekly_lists_hist    = vq.query_hist_weeklies(week_cycle_code = app_utils.get_cycle_code())
+    avail_weeks          = vq.get_avail_weeks(week_cycle_code = app_utils.get_cycle_code())
+    monthly_lists_latest = vq.query_latest_monthlies(month_str = datetime.now().strftime("%Y-%m"))
+    monthly_lists_hist   = vq.query_hist_monthlies(month_str = datetime.now().strftime("%Y-%m"))
+    avail_months         = vq.get_avail_months(month_str = datetime.now().strftime("%Y-%m"))
 
 # Viz Params
 years = list(range(2008, datetime.now().year + 1))
@@ -54,12 +55,12 @@ if "tab_state" not in st.session_state:
 with tab_1:
     st.title("Overview")
     st.markdown(f"""
-    The NYT Bestseller Lists Historical Viewer allows you to view both the current NYT Bestsellers book lists and the lists of the past.
+    The NYT Bestseller Lists Historical Viewer is a multi-tab dashboard view of the current and historical NYT Bestsellers book lists.
 
     To use the historical viewer, click one of the list tabs at the top of this page. Input a date in the "Select a date" input boxes, then press \
     "Apply filter" to view the lists for that date. To remove a selected filter and view the latest lists, push the "Reset to latest" button.
 
-    Currently, the viewer app can show list data ranging from **{avail_weeks[-1].strftime("%B %d, %Y")}** to **{avail_weeks[0].strftime("%B %d, %Y")}** -- the most recent list.
+    Currently, the app can retrieve and show list data ranging from **{avail_weeks[-1].strftime("%B %d, %Y")}** to **{avail_weeks[0].strftime("%B %d, %Y")}**, the most recent list.
 
     ## Background
     The NYT Bestseller Lists are rankings of the most popular books in the United States ordered by recent sales. The lists are prepared using the \
