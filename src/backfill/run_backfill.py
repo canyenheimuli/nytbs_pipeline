@@ -121,9 +121,9 @@ def run_backfill(
     for all dates specified or found
     '''
     completed, failures = load_checkpoint()
-    remaining = [d for d in dates if d.isoformat() not in completed]
+    remaining = [d for d in dates if d not in completed]
 
-    log.info(f"Backfill scope   : {dates[0]} → {dates[-1]} ({len(dates)} Thursdays)")
+    log.info(f"Backfill scope   : {dates[0]} → {dates[-1]} ({len(dates)} Sundays)")
     log.info(f"Already completed: {len(completed)}")
     log.info(f"Remaining        : {len(remaining)}")
 
