@@ -1,0 +1,60 @@
+name: Historical Data Backfill
+
+on:
+  workflow_dispatch:
+    inputs:
+      dates:
+        description: "List of dates to mapp ETL pipeline"
+        required: false
+
+jobs:
+  backfill:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+      - uses: actions/checkout@v4
+
+      - name: Install Microsoft ODBC Driver 18
+        run: |
+          sudo curl https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/prod.list | sudo tee /etc/apt/sources.list.d/mssql-release.list
+          sudo apt-get update
+          sudo ACCEPT_EULA=Y apt-get install -y msodbcsql18
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      # Restore checkpoint from prior run (stored as a GHA cache)
+      - name: Restore checkpoint
+        uses: actions/cache@v4
+        with:
+          path: backfill_checkpoint.json
+          key: backfill-checkpoint
+          restore-keys: backfill-checkpoint
+
+      - name: Run backfill
+        env:
+          # Python Path
+          PYTHONPATH: ${{ github.workspace }}
+          # NYT API Key
+          NYT_API_KEY: ${{ secrets.NYT_API_KEY }}
+          # Azure SQL DB Creds
+          AZURE_SQL_SERVER: ${{ secrets.AZURE_SQL_SERVER }}
+          AZURE_SQL_DATABASE: ${{ secrets.AZURE_SQL_DATABASE }}
+          AZURE_SQL_USERNAME: ${{ secrets.AZURE_SQL_USERNAME }}
+          AZURE_SQL_PASSWORD: ${{ secrets.AZURE_SQL_PASSWORD }}
+        run: |
+          python backfill.py
+
+      # Save checkpoint even if job fails
+      - name: Save checkpoint
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: backfill_checkpoint.json
+          key: backfill-checkpoint
