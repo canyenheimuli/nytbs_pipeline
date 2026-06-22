@@ -15,13 +15,13 @@ def find_nearest_week(selected_date: date, available_weeks: list[date]) -> date:
 def get_cycle_code():
     '''
     Gets string for the current (or last)
-    week's Friday to use in cache cycle
+    week's Thursday to use in cache cycle
     '''
-    # Get date, benchmark to most recent Friday, and use as a cache key
+    # Get date, benchmark to most recent Thursday, and use as a cache key for weeklies
     today = datetime.now().date()
-    days_since_fri = (today.weekday() - 4) % 7
-    most_recent_fri = today - timedelta(days=days_since_fri)
-    return most_recent_fri.strftime("%Y-%m-%d")
+    days_since_thu = (today.weekday() - 3) % 7
+    most_recent_thu = today - timedelta(days=days_since_thu)
+    return most_recent_thu.strftime("%Y-%m-%d")
 
 # Re-order and Split Queried List Data fn.
 def process_list_df(lists_df: pd.DataFrame, lists_freq: str) -> list[pd.DataFrame]:
