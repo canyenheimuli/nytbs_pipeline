@@ -172,6 +172,51 @@ def query_hist_weeklies(week_cycle_code) -> pd.DataFrame:
     # Output
     return pd.DataFrame(df)
 
+# All time Longest-running Weeklies
+@st.cache_data
+def query_longest_running_weeklies(week_cycle_code) -> pd.DataFrame:
+    '''
+    Queries DB and caches data for all weekly list
+    books ranked by number of weeks on list (ever)
+    '''
+    # Create engine
+    engine = viz_engine()
+
+    # Connect, run queries
+    with engine.connect() as conn:
+        query = text("""
+            WITH w_ranked_by_period AS (
+                SELECT 
+                    b.title,
+                    b.book_image,
+                    b.book_descr,
+                    w.periods_on_list,
+                    l.list_name,
+                    w.list_date,
+                    ROW_NUMBER() OVER (PARTITION BY b.title ORDER BY w.periods_on_list DESC) AS rownum
+                FROM weekly_lists AS w
+                LEFT JOIN books AS b
+                    ON w.isbn13 = b.isbn13
+                LEFT JOIN list_info as l
+                    ON w.list_id = l.list_id
+            )
+            
+            SELECT
+                title,
+                book_image,
+                book_descr,
+                periods_on_list,
+                list_name,
+                list_date
+            FROM w_ranked_by_period
+            WHERE rownum = 1
+            ORDER BY periods_on_list DESC;
+        """)
+        df = conn.execute(query).fetchall()
+    
+    # Output
+    return pd.DataFrame(df)
+
 # Latest Monthlies Fn.
 @st.cache_data
 def query_latest_monthlies(month_str) -> pd.DataFrame:
@@ -233,6 +278,51 @@ def query_hist_monthlies(month_str) -> pd.DataFrame:
                 SELECT MAX(list_date_year * 100 + list_date_month) FROM monthly_lists
             )
             ORDER BY l.list_name, rank;
+        """)
+        df = conn.execute(query).fetchall()
+    
+    # Output
+    return pd.DataFrame(df)
+
+# All time Longest-running Monthlies
+@st.cache_data
+def query_longest_running_monthlies(month_str) -> pd.DataFrame:
+    '''
+    Queries DB and caches data for all monthly list
+    books ranked by number of months on list (ever)
+    '''
+    # Create engine
+    engine = viz_engine()
+
+    # Connect, run queries
+    with engine.connect() as conn:
+        query = text("""
+            WITH m_ranked_by_period AS (
+                SELECT 
+                    b.title,
+                    b.book_image,
+                    b.book_descr,
+                    m.periods_on_list,
+                    l.list_name,
+                    m.list_date,
+                    ROW_NUMBER() OVER (PARTITION BY b.title ORDER BY m.periods_on_list DESC) AS rownum
+                FROM monthly_lists AS m
+                LEFT JOIN books AS b
+                    ON m.isbn13 = b.isbn13
+                LEFT JOIN list_info as l
+                    ON m.list_id = l.list_id
+            )
+            
+            SELECT
+                title,
+                book_image,
+                book_descr,
+                periods_on_list,
+                list_name,
+                list_date
+            FROM m_ranked_by_period
+            WHERE rownum = 1
+            ORDER BY periods_on_list DESC;
         """)
         df = conn.execute(query).fetchall()
     
