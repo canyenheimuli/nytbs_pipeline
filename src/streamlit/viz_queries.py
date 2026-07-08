@@ -188,6 +188,7 @@ def query_longest_running_weeklies(week_cycle_code) -> pd.DataFrame:
             WITH w_ranked_by_period AS (
                 SELECT 
                     b.title,
+                    b.author,
                     b.book_image,
                     b.book_descr,
                     w.periods_on_list,
@@ -203,6 +204,7 @@ def query_longest_running_weeklies(week_cycle_code) -> pd.DataFrame:
             
             SELECT
                 title,
+                author,
                 book_image,
                 book_descr,
                 periods_on_list,
@@ -300,6 +302,7 @@ def query_longest_running_monthlies(month_str) -> pd.DataFrame:
             WITH m_ranked_by_period AS (
                 SELECT 
                     b.title,
+                    b.author,
                     b.book_image,
                     b.book_descr,
                     m.periods_on_list,
@@ -315,6 +318,7 @@ def query_longest_running_monthlies(month_str) -> pd.DataFrame:
             
             SELECT
                 title,
+                author,
                 book_image,
                 book_descr,
                 periods_on_list,
