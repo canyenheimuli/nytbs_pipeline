@@ -40,7 +40,8 @@ def viz_engine() -> Engine:
         password=parsed_url.password
     )
     socket.socket = socks.socksocket
-    
+    socket.setdefaulttimeout(10)  # SOCKS + TCP connect timeout
+
     # DB Params
     server   = st.secrets["AZURE_SQL_SERVER"]
     database = st.secrets["AZURE_SQL_DATABASE"]
@@ -59,7 +60,9 @@ def viz_engine() -> Engine:
     return create_engine(
         conn_url,
         connect_args={
-            "cafile": cafile,   # CA file for encryption
+            "cafile": cafile,    # CA file for encryption
+            "timeout": 10,       # pytds query timeout
+            "login_timeout": 10, # pytds login/auth timeout
         },
         pool_pre_ping=True,      # drops and replaces stale connections
         pool_size=5,             # max persistent connections in the pool
@@ -67,6 +70,22 @@ def viz_engine() -> Engine:
         pool_timeout=30,         # seconds to wait for a pool connection
         pool_recycle=1800,       # recycle connections every 30 minutes
     )
+
+# Exec Query w Retry Wrapper fn.
+def execute_w_retry(engine, query, attempts=5, base_delay=1, max_delay=20) -> Sequence[Row]:
+    '''
+    Runs the provided query with the provided engine with built-in
+    query-level retry logic (recommended by Microsoft)
+    '''
+    last_err: Exception | None = None
+    for attempt in range(attempts):
+        try:
+            with engine.connect() as conn:
+                return conn.execute(query).fetchall()
+        except Exception as e:
+            last_err = e
+            time.sleep(min(base_delay * 2**attempt, max_delay))
+    raise last_err
 
 # Get avail weeks in db for week filter
 @st.cache_data
@@ -78,10 +97,11 @@ def get_avail_weeks(week_cycle_code) -> list[date]:
     # Create engine
     engine = viz_engine()
 
+    # Define query
+    query = text("SELECT DISTINCT list_date FROM weekly_lists ORDER BY list_date DESC")
+    
     # Connect, get weeks
-    with engine.connect() as conn:
-        query = text("SELECT DISTINCT list_date FROM weekly_lists ORDER BY list_date DESC")
-        rows = conn.execute(query).fetchall()
+    rows = execute_w_retry(engine, query)
 
     # Output (list of dates)
     return [r[0] for r in rows]
@@ -96,16 +116,17 @@ def get_avail_months(month_str) -> list[date]:
     # Create engine
     engine = viz_engine()
 
-    # Connect, get weeks
-    with engine.connect() as conn:
-        query = text("""
-            SELECT DISTINCT 
-                list_date_month, 
-                list_date_year 
-            FROM monthly_lists 
-            ORDER BY list_date_year DESC, list_date_month DESC;
-        """)
-        rows = conn.execute(query).fetchall()
+    # Define query
+    query = text("""
+        SELECT DISTINCT 
+            list_date_month, 
+            list_date_year 
+        FROM monthly_lists 
+        ORDER BY list_date_year DESC, list_date_month DESC;
+    """)
+    
+    # Connect, get months
+    rows = execute_w_retry(engine, query)
 
     # Output (list of months)
     return [datetime(r[1], r[0], 1) for r in rows]
@@ -119,24 +140,25 @@ def query_latest_weeklies(week_cycle_code) -> pd.DataFrame:
     # Create engine
     engine = viz_engine()
 
-    # Connect, run queries
-    with engine.connect() as conn:
-        query = text("""
-            SELECT 
-                w.list_date,
-                w.list_id AS list_id,
-                l.list_name AS list_name,
-                w.book_rank AS rank,
-                b.title AS title,
-                b.author AS author,
-                b.book_image AS image
-            FROM books AS b
-            LEFT JOIN weekly_lists AS w ON b.isbn13 = w.isbn13
-            LEFT JOIN list_info AS l ON w.list_id = l.list_id
-            WHERE w.list_date = (SELECT MAX(list_date) FROM weekly_lists)
-            ORDER BY l.list_name, rank;
-        """)
-        df = conn.execute(query).fetchall()
+    # Define query
+    query = text("""
+        SELECT 
+            w.list_date,
+            w.list_id AS list_id,
+            l.list_name AS list_name,
+            w.book_rank AS rank,
+            b.title AS title,
+            b.author AS author,
+            b.book_image AS image
+        FROM books AS b
+        LEFT JOIN weekly_lists AS w ON b.isbn13 = w.isbn13
+        LEFT JOIN list_info AS l ON w.list_id = l.list_id
+        WHERE w.list_date = (SELECT MAX(list_date) FROM weekly_lists)
+        ORDER BY l.list_name, rank;
+    """)
+    
+    # Connect, get latest weeklies
+    df = execute_w_retry(engine, query)
     
     # Output
     return pd.DataFrame(df)
@@ -150,24 +172,94 @@ def query_hist_weeklies(week_cycle_code) -> pd.DataFrame:
     # Create engine
     engine = viz_engine()
 
-    # Connect, run queries
-    with engine.connect() as conn:
-        query = text("""
-            SELECT 
-                w.list_date,
-                w.list_id AS list_id,
-                l.list_name AS list_name,
-                w.book_rank AS rank,
-                b.title AS title,
-                b.author AS author,
-                b.book_image AS image
-            FROM books AS b
-            LEFT JOIN weekly_lists AS w ON b.isbn13 = w.isbn13
-            LEFT JOIN list_info AS l ON w.list_id = l.list_id
-            WHERE w.list_date != (SELECT MAX(list_date) FROM weekly_lists)
-            ORDER BY l.list_name, rank;
-        """)
-        df = conn.execute(query).fetchall()
+    # Define query
+    query = text("""
+        SELECT 
+            w.list_date,
+            w.list_id AS list_id,
+            l.list_name AS list_name,
+            w.book_rank AS rank,
+            b.title AS title,
+            b.author AS author,
+            b.book_image AS image
+        FROM books AS b
+        LEFT JOIN weekly_lists AS w ON b.isbn13 = w.isbn13
+        LEFT JOIN list_info AS l ON w.list_id = l.list_id
+        WHERE w.list_date != (SELECT MAX(list_date) FROM weekly_lists)
+        ORDER BY l.list_name, rank;
+    """)
+
+    # Connect, get hist. weeklies
+    df = execute_w_retry(engine, query)
+    
+    # Output
+    return pd.DataFrame(df)
+
+# Latest Monthlies Fn.
+@st.cache_data
+def query_latest_monthlies(month_str) -> pd.DataFrame:
+    '''
+    Queries DB and caches data for latest monthly lists
+    '''
+    # Create engine
+    engine = viz_engine()
+
+    # Define query
+    query = text("""
+        SELECT 
+            m.list_date_year,
+            m.list_date_month,
+            m.list_id AS list_id,
+            l.list_name AS list_name,
+            m.book_rank AS rank,
+            b.title AS title,
+            b.author AS author,
+            b.book_image AS image
+        FROM books AS b
+        LEFT JOIN monthly_lists AS m ON b.isbn13 = m.isbn13
+        LEFT JOIN list_info AS l ON m.list_id = l.list_id
+        WHERE m.list_date_year = (SELECT MAX(list_date_year) FROM monthly_lists)
+            AND m.list_date_month = (SELECT MAX(list_date_month) FROM monthly_lists WHERE list_date_year = (SELECT MAX(list_date_year) FROM monthly_lists))
+        ORDER BY l.list_name, rank;
+    """)
+    
+    # Connect, get latest monthlies
+    df = execute_w_retry(engine, query)
+    
+    # Output
+    return pd.DataFrame(df)
+
+# Historical Monthlies Fn.
+@st.cache_data
+def query_hist_monthlies(month_str) -> pd.DataFrame:
+    '''
+    Queries DB and caches data for historical monthly lists
+    '''
+    # Create engine
+    engine = viz_engine()
+
+    # Define query
+    query = text("""
+        SELECT 
+            m.list_date_year,
+            m.list_date_month,
+            m.list_id AS list_id,
+            l.list_name AS list_name,
+            m.book_rank AS rank,
+            b.title AS title,
+            b.author AS author,
+            b.book_image AS image
+        FROM books AS b
+        LEFT JOIN monthly_lists AS m ON b.isbn13 = m.isbn13
+        LEFT JOIN list_info AS l ON m.list_id = l.list_id
+        WHERE (m.list_date_year * 100 + m.list_date_month) < (
+            SELECT MAX(list_date_year * 100 + list_date_month) FROM monthly_lists
+        )
+        ORDER BY l.list_name, rank;
+    """)
+
+    # Connect, get hist. monthlies
+    df = execute_w_retry(engine, query)
     
     # Output
     return pd.DataFrame(df)
@@ -182,107 +274,41 @@ def query_longest_running_weeklies(week_cycle_code) -> pd.DataFrame:
     # Create engine
     engine = viz_engine()
 
-    # Connect, run queries
-    with engine.connect() as conn:
-        query = text("""
-            WITH w_ranked_by_period AS (
-                SELECT 
-                    b.title,
-                    b.author,
-                    b.book_image,
-                    b.book_descr,
-                    w.periods_on_list,
-                    l.list_name,
-                    w.list_date,
-                    ROW_NUMBER() OVER (PARTITION BY b.title ORDER BY w.periods_on_list DESC) AS rownum
-                FROM weekly_lists AS w
-                LEFT JOIN books AS b
-                    ON w.isbn13 = b.isbn13
-                LEFT JOIN list_info as l
-                    ON w.list_id = l.list_id
-            )
-            
-            SELECT
-                title,
-                author,
-                book_image,
-                book_descr,
-                periods_on_list,
-                list_name,
-                list_date
-            FROM w_ranked_by_period
-            WHERE rownum = 1
-            ORDER BY periods_on_list DESC;
-        """)
-        df = conn.execute(query).fetchall()
-    
-    # Output
-    return pd.DataFrame(df)
-
-# Latest Monthlies Fn.
-@st.cache_data
-def query_latest_monthlies(month_str) -> pd.DataFrame:
-    '''
-    Queries DB and caches data for latest monthly lists
-    '''
-    # Create engine
-    engine = viz_engine()
-
-    # Connect, run queries
-    with engine.connect() as conn:
-        query = text("""
+    # Define query
+    query = text("""
+        WITH w_ranked_by_period AS (
             SELECT 
-                m.list_date_year,
-                m.list_date_month,
-                m.list_id AS list_id,
-                l.list_name AS list_name,
-                m.book_rank AS rank,
-                b.title AS title,
-                b.author AS author,
-                b.book_image AS image
-            FROM books AS b
-            LEFT JOIN monthly_lists AS m ON b.isbn13 = m.isbn13
-            LEFT JOIN list_info AS l ON m.list_id = l.list_id
-            WHERE m.list_date_year = (SELECT MAX(list_date_year) FROM monthly_lists)
-                AND m.list_date_month = (SELECT MAX(list_date_month) FROM monthly_lists WHERE list_date_year = (SELECT MAX(list_date_year) FROM monthly_lists))
-            ORDER BY l.list_name, rank;
-        """)
-        df = conn.execute(query).fetchall()
+                b.title,
+                b.author,
+                b.book_image,
+                b.book_descr,
+                w.periods_on_list,
+                l.list_name,
+                w.list_date,
+                ROW_NUMBER() OVER (PARTITION BY b.title ORDER BY w.periods_on_list DESC) AS rownum
+            FROM weekly_lists AS w
+            LEFT JOIN books AS b
+                ON w.isbn13 = b.isbn13
+            LEFT JOIN list_info as l
+                ON w.list_id = l.list_id
+        )
+        
+        SELECT
+            title,
+            author,
+            book_image,
+            book_descr,
+            periods_on_list,
+            list_name,
+            list_date
+        FROM w_ranked_by_period
+        WHERE rownum = 1
+        ORDER BY periods_on_list DESC;
+    """)
     
-    # Output
-    return pd.DataFrame(df)
+    # Connect, get longest running weeklies
+    df = execute_w_retry(engine, query)
 
-# Historical Monthlies Fn.
-@st.cache_data
-def query_hist_monthlies(month_str) -> pd.DataFrame:
-    '''
-    Queries DB and caches data for historical monthly lists
-    '''
-    # Create engine
-    engine = viz_engine()
-
-    # Connect, run queries
-    with engine.connect() as conn:
-        query = text("""
-            SELECT 
-                m.list_date_year,
-                m.list_date_month,
-                m.list_id AS list_id,
-                l.list_name AS list_name,
-                m.book_rank AS rank,
-                b.title AS title,
-                b.author AS author,
-                b.book_image AS image
-            FROM books AS b
-            LEFT JOIN monthly_lists AS m ON b.isbn13 = m.isbn13
-            LEFT JOIN list_info AS l ON m.list_id = l.list_id
-            WHERE (m.list_date_year * 100 + m.list_date_month) < (
-                SELECT MAX(list_date_year * 100 + list_date_month) FROM monthly_lists
-            )
-            ORDER BY l.list_name, rank;
-        """)
-        df = conn.execute(query).fetchall()
-    
     # Output
     return pd.DataFrame(df)
 
@@ -296,39 +322,40 @@ def query_longest_running_monthlies(month_str) -> pd.DataFrame:
     # Create engine
     engine = viz_engine()
 
-    # Connect, run queries
-    with engine.connect() as conn:
-        query = text("""
-            WITH m_ranked_by_period AS (
-                SELECT 
-                    b.title,
-                    b.author,
-                    b.book_image,
-                    b.book_descr,
-                    m.periods_on_list,
-                    l.list_name,
-                    m.list_date,
-                    ROW_NUMBER() OVER (PARTITION BY b.title ORDER BY m.periods_on_list DESC) AS rownum
-                FROM monthly_lists AS m
-                LEFT JOIN books AS b
-                    ON m.isbn13 = b.isbn13
-                LEFT JOIN list_info as l
-                    ON m.list_id = l.list_id
-            )
-            
-            SELECT
-                title,
-                author,
-                book_image,
-                book_descr,
-                periods_on_list,
-                list_name,
-                list_date
-            FROM m_ranked_by_period
-            WHERE rownum = 1
-            ORDER BY periods_on_list DESC;
-        """)
-        df = conn.execute(query).fetchall()
+    # Define query
+    query = text("""
+        WITH m_ranked_by_period AS (
+            SELECT 
+                b.title,
+                b.author,
+                b.book_image,
+                b.book_descr,
+                m.periods_on_list,
+                l.list_name,
+                m.list_date,
+                ROW_NUMBER() OVER (PARTITION BY b.title ORDER BY m.periods_on_list DESC) AS rownum
+            FROM monthly_lists AS m
+            LEFT JOIN books AS b
+                ON m.isbn13 = b.isbn13
+            LEFT JOIN list_info as l
+                ON m.list_id = l.list_id
+        )
+        
+        SELECT
+            title,
+            author,
+            book_image,
+            book_descr,
+            periods_on_list,
+            list_name,
+            list_date
+        FROM m_ranked_by_period
+        WHERE rownum = 1
+        ORDER BY periods_on_list DESC;
+    """)
     
+    # Connect, get longest running monthlies
+    df = execute_w_retry(engine, query)
+
     # Output
     return pd.DataFrame(df)
