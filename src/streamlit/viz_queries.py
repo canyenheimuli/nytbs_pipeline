@@ -7,6 +7,7 @@ import certifi
 from sqlalchemy import create_engine, event, text
 from sqlalchemy.engine import Engine
 import pytds
+import time
 from datetime import date, datetime, timedelta
 import streamlit as st
 import pandas as pd
