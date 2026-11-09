@@ -162,7 +162,7 @@ with tab_2:
                     r_cols = st.columns(cols_per_row)
                     
                     # Loop parallel over inputs into st_cols
-                    for r_rank, r_title, r_author, r_image, r_col in zip(weeklies_row['rank'], weeklies_row['title'], weeklies_row['author'], weeklies_row['image'], r_cols):
+                    for r_rank, r_title, r_author, r_image, r_isbn, r_col in zip(weeklies_row['rank'], weeklies_row['title'], weeklies_row['author'], weeklies_row['image'], weeklies_row['isbn13'], r_cols):
                         with r_col:
                             # Check for essential data
                             if r_title == "" and r_author == "" and r_image == "":
@@ -171,7 +171,7 @@ with tab_2:
                             else:
                                 # Render image if it exists
                                 if r_image:
-                                    st.image(r_image, width=175)
+                                    st.image(r_image, width=175, link=app_utils.gen_bnstore_link(r_isbn))
                                 else:
                                     st.caption("No image available")
                                 
@@ -256,7 +256,7 @@ with tab_3:
                     r_cols = st.columns(cols_per_row)
                     
                     # Loop parallel over inputs into st_cols
-                    for r_rank, r_title, r_author, r_image, r_col in zip(monthlies_row['rank'], monthlies_row['title'], monthlies_row['author'], monthlies_row['image'], r_cols):
+                    for r_rank, r_title, r_author, r_image, r_isbn, r_col in zip(monthlies_row['rank'], monthlies_row['title'], monthlies_row['author'], monthlies_row['image'], monthlies_row['isbn13'], r_cols):
                         with r_col:
                             # Check for essential data
                             if r_title == "" and r_author == "" and r_image == "":
@@ -265,7 +265,7 @@ with tab_3:
                             else:
                                 # Render image if it exists
                                 if r_image:
-                                    st.image(r_image, width=175)
+                                    st.image(r_image, width=175, link=app_utils.gen_bnstore_link(r_isbn))
                                 else:
                                     st.caption("No image available")
                                 
