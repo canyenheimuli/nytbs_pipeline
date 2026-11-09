@@ -144,6 +144,7 @@ def query_latest_weeklies(week_cycle_code) -> pd.DataFrame:
     # Define query
     query = text("""
         SELECT 
+            w.isbn13,
             w.list_date,
             w.list_id AS list_id,
             l.list_name AS list_name,
@@ -176,6 +177,7 @@ def query_hist_weeklies(week_cycle_code) -> pd.DataFrame:
     # Define query
     query = text("""
         SELECT 
+            w.isbn13,
             w.list_date,
             w.list_id AS list_id,
             l.list_name AS list_name,
@@ -208,6 +210,7 @@ def query_latest_monthlies(month_str) -> pd.DataFrame:
     # Define query
     query = text("""
         SELECT 
+            m.isbn13,
             m.list_date_year,
             m.list_date_month,
             m.list_id AS list_id,
@@ -242,6 +245,7 @@ def query_hist_monthlies(month_str) -> pd.DataFrame:
     # Define query
     query = text("""
         SELECT 
+            m.isbn13,
             m.list_date_year,
             m.list_date_month,
             m.list_id AS list_id,

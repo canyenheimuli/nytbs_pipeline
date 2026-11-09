@@ -11,6 +11,24 @@ def find_nearest_week(selected_date: date, available_weeks: list[date]) -> date:
     past_weeks = [w for w in available_weeks if w <= selected_date]
     return max(past_weeks) if past_weeks else None
 
+# Turn ISBN-13 into B&N Store Link for Book
+def gen_bnstore_link(isbn: str, base_url: str = "https://barnesandnoble.com") -> str:
+    '''
+    Takes in an ISBN-13 code and generates 
+    a ready B&N store link to the book
+    '''
+    # Sanitize input: remove hyphens, spaces, and any hidden whitespace
+    clean_isbn = str(isbn).replace("-", "").replace(" ", "").strip()
+    
+    # Verify clean ISBN-13 criteria
+    if len(clean_isbn) == 13 and clean_isbn.isdigit():
+        link = f"{base_url}/s/{clean_isbn}"
+    else:
+        link = None
+    
+    # Output: Link
+    return link
+
 # Get code for current cycle (week)
 def get_cycle_code():
     '''
