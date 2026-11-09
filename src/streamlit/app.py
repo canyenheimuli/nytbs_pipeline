@@ -58,7 +58,8 @@ with tab_1:
     The NYT Bestseller Lists Historical Viewer is a multi-tab dashboard view of the current and historical NYT Bestsellers book lists.
 
     To use the historical viewer, click one of the list tabs at the top of this page. Input a date in the "Select a date" input boxes, then press \
-    "Apply filter" to view the lists for that date. To remove a selected filter and view the latest lists, push the "Reset to latest" button.
+    "Apply filter" to view the lists for that date. To remove a selected filter and view the latest lists, push the "Reset to latest" button. \
+    Click on any book's image to be redirected to a webpage where you can buy the book in any of multiple formats!
 
     Currently, the app can retrieve and show list data ranging from **{avail_weeks[-1].strftime("%B %d, %Y")}** to **{avail_weeks[0].strftime("%B %d, %Y")}**, the most recent list.
 
